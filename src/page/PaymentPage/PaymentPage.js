@@ -24,9 +24,11 @@ const PaymentPage = () => {
     firstName: "",
     lastName: "",
     contact: "",
-    address: "",
+    addressLine1: "",
+    addressLine2: "",
     city: "",
-    zip: "",
+    state: "",
+    zipCode: "",
   });
 
   useEffect(() => {
@@ -57,12 +59,12 @@ const PaymentPage = () => {
       <Row>
         <Col lg={7}>
           <div>
-            <h2 className="mb-2">배송 주소</h2>
+            <h2 className="mb-2">Shipping Address</h2>
             <div>
               <Form onSubmit={handleSubmit}>
                 <Row className="mb-3">
                   <Form.Group as={Col} controlId="lastName">
-                    <Form.Label>성</Form.Label>
+                    <Form.Label>Last Name</Form.Label>
                     <Form.Control
                       type="text"
                       onChange={handleFormChange}
@@ -72,7 +74,7 @@ const PaymentPage = () => {
                   </Form.Group>
 
                   <Form.Group as={Col} controlId="firstName">
-                    <Form.Label>이름</Form.Label>
+                    <Form.Label>First Name</Form.Label>
                     <Form.Control
                       type="text"
                       onChange={handleFormChange}
@@ -83,22 +85,35 @@ const PaymentPage = () => {
                 </Row>
 
                 <Form.Group className="mb-3" controlId="formGridAddress1">
-                  <Form.Label>연락처</Form.Label>
+                  <Form.Label>Phone</Form.Label>
                   <Form.Control
-                    placeholder="010-xxx-xxxxx"
+                    type="tel"
+                    placeholder="(123) 456-7890"
                     onChange={handleFormChange}
                     required
                     name="contact"
                   />
                 </Form.Group>
 
-                <Form.Group className="mb-3" controlId="formGridAddress2">
-                  <Form.Label>주소</Form.Label>
+                <Form.Group className="mb-3" controlId="addressLine1">
+                  <Form.Label>Address Line 1</Form.Label>
                   <Form.Control
-                    placeholder="Apartment, studio, or floor"
+                    placeholder="Street address"
                     onChange={handleFormChange}
                     required
-                    name="address"
+                    name="addressLine1"
+                  />
+                </Form.Group>
+
+                <Form.Group className="mb-3" controlId="addressLine2">
+                  <Form.Label>
+                    Address Line 2{" "}
+                    <span className="text-muted">(optional)</span>
+                  </Form.Label>
+                  <Form.Control
+                    placeholder="Apartment, suite, unit, building, floor"
+                    onChange={handleFormChange}
+                    name="addressLine2"
                   />
                 </Form.Group>
 
@@ -112,12 +127,21 @@ const PaymentPage = () => {
                     />
                   </Form.Group>
 
-                  <Form.Group as={Col} controlId="formGridZip">
-                    <Form.Label>Zip</Form.Label>
+                  <Form.Group as={Col} controlId="formGridState">
+                    <Form.Label>State</Form.Label>
                     <Form.Control
                       onChange={handleFormChange}
                       required
-                      name="zip"
+                      name="state"
+                    />
+                  </Form.Group>
+
+                  <Form.Group as={Col} controlId="formGridZip">
+                    <Form.Label>ZIP Code</Form.Label>
+                    <Form.Control
+                      onChange={handleFormChange}
+                      required
+                      name="zipCode"
                     />
                   </Form.Group>
                 </Row>
@@ -125,7 +149,7 @@ const PaymentPage = () => {
                   {/* <OrderReceipt /> */}
                 </div>
                 <div>
-                  <h2 className="payment-title">결제 정보</h2>
+                  <h2 className="payment-title">Payment Information</h2>
                 </div>
 
                 <Button
@@ -133,7 +157,7 @@ const PaymentPage = () => {
                   className="payment-button pay-button"
                   type="submit"
                 >
-                  결제하기
+                  Place Order
                 </Button>
               </Form>
             </div>

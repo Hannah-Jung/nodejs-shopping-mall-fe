@@ -5,13 +5,14 @@ import { useNavigate } from "react-router";
 
 import "./style/register.style.css";
 
-import { registerUser } from "../../features/user/userSlice";
+import { registerUser, clearErrors } from "../../features/user/userSlice";
 
 const RegisterPage = () => {
   const dispatch = useDispatch();
   const [formData, setFormData] = useState({
     email: "",
-    name: "",
+    firstName: "",
+    lastName: "",
     password: "",
     confirmPassword: "",
     policy: false,
@@ -23,10 +24,32 @@ const RegisterPage = () => {
 
   const register = (event) => {
     event.preventDefault();
-    const { name, email, password, confirmPassword, policy } = formData;
+    const { email, firstName, lastName, password, confirmPassword, policy } =
+      formData;
+
+    const form = event.target;
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    const trimmedEmail = email.trim();
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+
+    if (
+      !trimmedEmail ||
+      !trimmedFirstName ||
+      !trimmedLastName ||
+      !password ||
+      !confirmPassword.trim()
+    ) {
+      return;
+    }
+
     const checkConfirmPassword = password === confirmPassword;
     if (!checkConfirmPassword) {
-      setPasswordError("비밀번호 중복확인이 일치하지 않습니다.");
+      setPasswordError("Passwords do not match");
       return;
     }
     if (!policy) {
@@ -35,29 +58,41 @@ const RegisterPage = () => {
     }
     setPasswordError("");
     setPolicyError(false);
-    dispatch(registerUser({ name, email, password, navigate }));
+    dispatch(
+      registerUser({
+        email: trimmedEmail,
+        firstName: trimmedFirstName,
+        lastName: trimmedLastName,
+        password,
+        navigate,
+      }),
+    );
   };
 
   const handleChange = (event) => {
     event.preventDefault();
-    let { id, value, type, checked } = event.target;
+    const { id, value, type, checked } = event.target;
     if (id === "confirmPassword" && passwordError) setPasswordError("");
+    if (id === "email" && registrationError) {
+      dispatch(clearErrors());
+    }
+    if (id === "password" && registrationError && value.length >= 3) {
+      dispatch(clearErrors());
+    }
     if (type === "checkbox") {
       if (policyError) setPolicyError(false);
-      setFormData((prevState) => ({ ...prevState, [id]: checked }));
+      setFormData((prev) => ({ ...prev, [id]: checked }));
     } else {
-      setFormData({ ...formData, [id]: value });
+      setFormData((prev) => ({ ...prev, [id]: value }));
     }
   };
 
   return (
     <Container className="register-area">
       {registrationError && (
-        <div>
-          <Alert variant="danger" className="error-message">
-            {registrationError}
-          </Alert>
-        </div>
+        <Alert variant="danger" className="error-message">
+          {registrationError}
+        </Alert>
       )}
       <Form onSubmit={register}>
         <Form.Group className="mb-3">
@@ -67,16 +102,29 @@ const RegisterPage = () => {
             id="email"
             placeholder="Enter email"
             onChange={handleChange}
+            value={formData.email}
             required
           />
         </Form.Group>
         <Form.Group className="mb-3">
-          <Form.Label>Name</Form.Label>
+          <Form.Label>First Name</Form.Label>
           <Form.Control
             type="text"
-            id="name"
-            placeholder="Enter name"
+            id="firstName"
+            placeholder="First Name"
             onChange={handleChange}
+            value={formData.firstName}
+            required
+          />
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>Last Name</Form.Label>
+          <Form.Control
+            type="text"
+            id="lastName"
+            placeholder="Last Name"
+            onChange={handleChange}
+            value={formData.lastName}
             required
           />
         </Form.Group>
@@ -87,6 +135,7 @@ const RegisterPage = () => {
             id="password"
             placeholder="Password"
             onChange={handleChange}
+            value={formData.password}
             required
           />
         </Form.Group>
@@ -97,8 +146,9 @@ const RegisterPage = () => {
             id="confirmPassword"
             placeholder="Confirm Password"
             onChange={handleChange}
+            value={formData.confirmPassword}
             required
-            isInvalid={passwordError}
+            isInvalid={!!passwordError}
           />
           <Form.Control.Feedback type="invalid">
             {passwordError}
@@ -107,15 +157,20 @@ const RegisterPage = () => {
         <Form.Group className="mb-3">
           <Form.Check
             type="checkbox"
-            label="이용약관에 동의합니다"
+            label="Accept Terms & Conditions"
             id="policy"
             onChange={handleChange}
             isInvalid={policyError}
             checked={formData.policy}
           />
+          {policyError && (
+            <Form.Text className="text-danger d-block mt-1">
+              Please agree to the Terms and Conditions.
+            </Form.Text>
+          )}
         </Form.Group>
         <Button variant="danger" type="submit">
-          회원가입
+          Sign Up
         </Button>
       </Form>
     </Container>
