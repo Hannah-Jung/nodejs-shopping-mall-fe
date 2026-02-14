@@ -41,6 +41,11 @@ const Login = () => {
             <Alert variant="danger">{loginError}</Alert>
           </div>
         )}
+        <div>
+          <p>ADMIN ACCOUNT INFO</p>
+          <p>Email: admin@email.com </p>
+          <p>Password: 123</p>
+        </div>
         <Form className="login-form" onSubmit={handleLoginWithEmail}>
           <Form.Group className="mb-3" controlId="formBasicEmail">
             <Form.Label>Email address</Form.Label>
@@ -63,15 +68,12 @@ const Login = () => {
           </Form.Group>
           <div className="display-space-between login-button-area">
             <Button variant="danger" type="submit">
-              Login
+              LOGIN
             </Button>
-            <div>
-              아직 계정이 없으세요?<Link to="/register">회원가입 하기</Link>{" "}
-            </div>
           </div>
 
           <div className="text-align-center mt-2">
-            <p>-외부 계정으로 로그인하기-</p>
+            <p>- OR -</p>
             <div className="display-center">
               <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
                 <GoogleLogin
@@ -82,6 +84,9 @@ const Login = () => {
                 />
               </GoogleOAuthProvider>
             </div>
+          </div>
+          <div className="text-align-center mt-2">
+            Don't have an account yet? <Link to="/register">Sign Up</Link>
           </div>
         </Form>
       </Container>

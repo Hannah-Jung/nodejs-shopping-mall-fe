@@ -6,7 +6,9 @@ import {
   faBox,
   faSearch,
   faShoppingBag,
+  faUser as faUserSolid,
 } from "@fortawesome/free-solid-svg-icons";
+import { Utensils } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -18,14 +20,12 @@ const Navbar = ({ user }) => {
   const isMobile = window.navigator.userAgent.indexOf("Mobile") !== -1;
   const [showSearchBox, setShowSearchBox] = useState(false);
   const menuList = [
-    "Women",
-    "Divided",
-    "Men",
-    "Baby",
-    "Kids",
-    "H&M HOME",
-    "Sale",
-    "Sustainability",
+    "Costco",
+    "Sam's Club",
+    "Whole Foods Market",
+    "Trader Joe's",
+    "Target",
+    "Walmart",
   ];
   let [width, setWidth] = useState(0);
   let navigate = useNavigate();
@@ -39,6 +39,7 @@ const Navbar = ({ user }) => {
   };
   const handleLogout = () => {
     dispatch(logout());
+    navigate("/login");
   };
   return (
     <div>
@@ -87,7 +88,7 @@ const Navbar = ({ user }) => {
           <div className="display-flex">
             {user ? (
               <div onClick={handleLogout} className="nav-icon">
-                <FontAwesomeIcon icon={faUser} />
+                <FontAwesomeIcon icon={faUserSolid} />
                 {!isMobile && (
                   <span style={{ cursor: "pointer" }}>로그아웃</span>
                 )}
@@ -123,8 +124,14 @@ const Navbar = ({ user }) => {
       </div>
 
       <div className="nav-logo">
-        <Link to="/">
-          <img width={100} src="/image/hm-logo.png" alt="hm-logo.png" />
+        {/* <Link to="/">
+          <Utensils size={56} color="#F97316" strokeWidth={2} />
+        </Link> */}
+        <Link to="/" className="nav-logo-link">
+          <div className="nav-logo-icon-wrap">
+            <Utensils size={32} color="white" strokeWidth={2.75} />
+          </div>
+          <span className="nav-logo-text">PREPT</span>
         </Link>
       </div>
       <div className="nav-menu-area">
