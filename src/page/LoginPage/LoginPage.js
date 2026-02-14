@@ -42,9 +42,15 @@ const Login = () => {
           </div>
         )}
         <div>
-          <p>ADMIN ACCOUNT INFO</p>
-          <p>Email: admin@email.com </p>
-          <p>Password: 123</p>
+          <p>
+            <strong>ADMIN ACCOUNT INFO</strong>
+          </p>
+          <p>
+            <strong>Email:</strong> admin@prept.com{" "}
+          </p>
+          <p>
+            <strong>Password:</strong> 123
+          </p>
         </div>
         <Form className="login-form" onSubmit={handleLoginWithEmail}>
           <Form.Group className="mb-3" controlId="formBasicEmail">
