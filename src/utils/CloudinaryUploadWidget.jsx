@@ -3,8 +3,8 @@ import { Button } from "react-bootstrap";
 import "../App.css";
 import "../common/style/common.style.css";
 
-const CLOUDNAME = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
-const UPLOADPRESET = process.env.REACT_APP_CLOUDINARY_PRESET;
+const CLOUDNAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const UPLOADPRESET = import.meta.env.VITE_CLOUDINARY_PRESET;
 
 class CloudinaryUploadWidget extends Component {
   componentDidMount() {
@@ -21,14 +21,14 @@ class CloudinaryUploadWidget extends Component {
             .setAttribute("src", result.info.secure_url);
           this.props.uploadImage(result.info.secure_url);
         }
-      } //https://cloudinary.com/documentation/react_image_and_video_upload
+      }, //https://cloudinary.com/documentation/react_image_and_video_upload
     );
     document.getElementById("upload_widget").addEventListener(
       "click",
       function () {
         myWidget.open();
       },
-      false
+      false,
     );
   }
 

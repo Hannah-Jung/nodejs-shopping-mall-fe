@@ -7,7 +7,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import "./style/login.style.css";
 import { loginWithEmail, loginWithGoogle } from "../../features/user/userSlice";
 import { clearErrors } from "../../features/user/userSlice";
-const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -30,9 +30,14 @@ const Login = () => {
     //구글 로그인 하기
   };
 
-  if (user) {
-    navigate("/");
-  }
+  // if (user) {
+  //   navigate("/");
+  // }
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
   return (
     <>
       <Container className="login-area">
