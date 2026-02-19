@@ -1,47 +1,13 @@
-// import React from "react";
-// import { Row, Col, Badge } from "react-bootstrap";
-// import { badgeBg } from "../../../constants/order.constants";
-// import { currencyFormat } from "../../../utils/number";
-
-// const OrderStatusCard = ({ orderItem }) => {
-//   return (
-//     <div>
-//       <Row className="status-card">
-//         <Col xs={2}>
-//           <img
-//             src={orderItem.items[0]?.productId?.image}
-//             alt={orderItem.items[0]?.productId?.image}
-//             height={96}
-//           />
-//         </Col>
-//         <Col xs={8} className="order-info">
-//           <div>
-//             <strong>주문번호: {orderItem.orderNum}</strong>
-//           </div>
-
-//           <div className="text-12">{orderItem.createdAt.slice(0, 10)}</div>
-
-//           <div>
-//             {orderItem.items[0].productId.name}
-//             {orderItem.items.length > 1 && `외 ${orderItem.items.length - 1}개`}
-//           </div>
-//           <div>₩ {currencyFormat(orderItem.totalPrice)}</div>
-//         </Col>
-//         <Col md={2} className="vertical-middle">
-//           <div className="text-align-center text-12">주문상태</div>
-//           <Badge bg={badgeBg[orderItem.status]}>{orderItem.status}</Badge>
-//         </Col>
-//       </Row>
-//     </div>
-//   );
-// };
-
-// export default OrderStatusCard;
-import { Row, Col, Badge } from "react-bootstrap";
 import { badgeBg } from "../../../constants/order.constants";
 import { currencyFormat } from "../../../utils/number";
 
-/** 카드에 표시되는 주문 (items[].productId가 populate된 형태) */
+const badgeBgClass: Record<string, string> = {
+  primary: "bg-blue-500 text-white",
+  warning: "bg-amber-500 text-white",
+  danger: "bg-red-500 text-white",
+  success: "bg-green-600 text-white",
+};
+
 export interface OrderStatusCardOrder {
   _id: string;
   orderNum?: string;
@@ -64,18 +30,22 @@ interface OrderStatusCardProps {
 const OrderStatusCard = ({ orderItem, className }: OrderStatusCardProps) => {
   const firstItem = orderItem.items[0];
   const productId = firstItem?.productId;
+  const statusKey = orderItem.status as keyof typeof badgeBg;
+  const bgKey = badgeBg[statusKey] ?? "primary";
 
   return (
     <div>
-      <Row className={`status-card ${className ?? ""}`.trim()}>
-        <Col xs={2}>
+      <div
+        className={`status-card grid grid-cols-12 gap-4 items-center ${className ?? ""}`.trim()}
+      >
+        <div className="col-span-2">
           <img
             src={productId?.image}
             alt={productId?.name ?? "product"}
             height={96}
           />
-        </Col>
-        <Col xs={8} className="order-info">
+        </div>
+        <div className="col-span-8 order-info">
           <div>
             <strong>주문번호: {orderItem.orderNum}</strong>
           </div>
@@ -85,15 +55,17 @@ const OrderStatusCard = ({ orderItem, className }: OrderStatusCardProps) => {
             {orderItem.items.length > 1 &&
               ` 외 ${orderItem.items.length - 1}개`}
           </div>
-          <div>₩ {currencyFormat(orderItem.totalPrice)}</div>
-        </Col>
-        <Col md={2} className="vertical-middle">
+          <div>$ {currencyFormat(orderItem.totalPrice)}</div>
+        </div>
+        <div className="col-span-2 vertical-middle">
           <div className="text-align-center text-12">주문상태</div>
-          <Badge bg={badgeBg[orderItem.status as keyof typeof badgeBg]}>
+          <span
+            className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${badgeBgClass[bgKey] ?? badgeBgClass.primary}`}
+          >
             {orderItem.status}
-          </Badge>
-        </Col>
-      </Row>
+          </span>
+        </div>
+      </div>
     </div>
   );
 };

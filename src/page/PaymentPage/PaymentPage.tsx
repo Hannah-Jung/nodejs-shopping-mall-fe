@@ -1,179 +1,6 @@
-// import React, { useState, useEffect } from "react";
-// import { Container, Row, Col, Form, Button } from "react-bootstrap";
-// import { useNavigate } from "react-router";
-// import { useSelector, useDispatch } from "react-redux";
-// import OrderReceipt from "./component/OrderReceipt";
-// import PaymentForm from "./component/PaymentForm";
-// import "./style/paymentPage.style.css";
-// import { cc_expires_format } from "../../utils/number";
-// import { createOrder } from "../../features/order/orderSlice";
-
-// const PaymentPage = () => {
-//   const dispatch = useDispatch();
-//   const { orderNum } = useSelector((state) => state.order);
-//   const [cardValue, setCardValue] = useState({
-//     cvc: "",
-//     expiry: "",
-//     focus: "",
-//     name: "",
-//     number: "",
-//   });
-//   const navigate = useNavigate();
-//   const [firstLoading, setFirstLoading] = useState(true);
-//   const [shipInfo, setShipInfo] = useState({
-//     firstName: "",
-//     lastName: "",
-//     contact: "",
-//     addressLine1: "",
-//     addressLine2: "",
-//     city: "",
-//     state: "",
-//     zipCode: "",
-//   });
-
-//   useEffect(() => {
-//     // 오더번호를 받으면 어디로 갈까?
-//   }, [orderNum]);
-
-//   const handleSubmit = (event) => {
-//     event.preventDefault();
-//     // 오더 생성하기
-//   };
-
-//   const handleFormChange = (event) => {
-//     //shipInfo에 값 넣어주기
-//   };
-
-//   const handlePaymentInfoChange = (event) => {
-//     //카드정보 넣어주기
-//   };
-
-//   const handleInputFocus = (e) => {
-//     setCardValue({ ...cardValue, focus: e.target.name });
-//   };
-//   // if (cartList?.length === 0) {
-//   //   navigate("/cart");
-//   // }// 주문할 아이템이 없다면 주문하기로 안넘어가게 막음
-//   return (
-//     <Container>
-//       <Row>
-//         <Col lg={7}>
-//           <div>
-//             <h2 className="mb-2">Shipping Address</h2>
-//             <div>
-//               <Form onSubmit={handleSubmit}>
-//                 <Row className="mb-3">
-//                   <Form.Group as={Col} controlId="lastName">
-//                     <Form.Label>Last Name</Form.Label>
-//                     <Form.Control
-//                       type="text"
-//                       onChange={handleFormChange}
-//                       required
-//                       name="lastName"
-//                     />
-//                   </Form.Group>
-
-//                   <Form.Group as={Col} controlId="firstName">
-//                     <Form.Label>First Name</Form.Label>
-//                     <Form.Control
-//                       type="text"
-//                       onChange={handleFormChange}
-//                       required
-//                       name="firstName"
-//                     />
-//                   </Form.Group>
-//                 </Row>
-
-//                 <Form.Group className="mb-3" controlId="formGridAddress1">
-//                   <Form.Label>Phone</Form.Label>
-//                   <Form.Control
-//                     type="tel"
-//                     placeholder="(123) 456-7890"
-//                     onChange={handleFormChange}
-//                     required
-//                     name="contact"
-//                   />
-//                 </Form.Group>
-
-//                 <Form.Group className="mb-3" controlId="addressLine1">
-//                   <Form.Label>Address Line 1</Form.Label>
-//                   <Form.Control
-//                     placeholder="Street address"
-//                     onChange={handleFormChange}
-//                     required
-//                     name="addressLine1"
-//                   />
-//                 </Form.Group>
-
-//                 <Form.Group className="mb-3" controlId="addressLine2">
-//                   <Form.Label>
-//                     Address Line 2{" "}
-//                     <span className="text-muted">(optional)</span>
-//                   </Form.Label>
-//                   <Form.Control
-//                     placeholder="Apartment, suite, unit, building, floor"
-//                     onChange={handleFormChange}
-//                     name="addressLine2"
-//                   />
-//                 </Form.Group>
-
-//                 <Row className="mb-3">
-//                   <Form.Group as={Col} controlId="formGridCity">
-//                     <Form.Label>City</Form.Label>
-//                     <Form.Control
-//                       onChange={handleFormChange}
-//                       required
-//                       name="city"
-//                     />
-//                   </Form.Group>
-
-//                   <Form.Group as={Col} controlId="formGridState">
-//                     <Form.Label>State</Form.Label>
-//                     <Form.Control
-//                       onChange={handleFormChange}
-//                       required
-//                       name="state"
-//                     />
-//                   </Form.Group>
-
-//                   <Form.Group as={Col} controlId="formGridZip">
-//                     <Form.Label>ZIP Code</Form.Label>
-//                     <Form.Control
-//                       onChange={handleFormChange}
-//                       required
-//                       name="zipCode"
-//                     />
-//                   </Form.Group>
-//                 </Row>
-//                 <div className="mobile-receipt-area">
-//                   {/* <OrderReceipt /> */}
-//                 </div>
-//                 <div>
-//                   <h2 className="payment-title">Payment Information</h2>
-//                 </div>
-
-//                 <Button
-//                   variant="dark"
-//                   className="payment-button pay-button"
-//                   type="submit"
-//                 >
-//                   Place Order
-//                 </Button>
-//               </Form>
-//             </div>
-//           </div>
-//         </Col>
-//         <Col lg={5} className="receipt-area">
-//           {/* <OrderReceipt  /> */}
-//         </Col>
-//       </Row>
-//     </Container>
-//   );
-// };
-
-// export default PaymentPage;
 import { useState, useEffect } from "react";
-import { Container, Row, Col, Form, Button } from "react-bootstrap";
+import Cards from "react-credit-cards-2";
+import "react-credit-cards-2/dist/es/styles-compiled.css";
 import OrderReceipt from "./component/OrderReceipt";
 import PaymentForm from "./component/PaymentForm";
 import type { PaymentCardValue, CardFocused } from "./component/PaymentForm";
@@ -246,131 +73,65 @@ const PaymentPage = () => {
   };
 
   return (
-    <Container>
-      <Row>
-        <Col lg={7}>
-          <div>
-            <h2 className="mb-2">Shipping Address</h2>
-            <div>
-              <Form onSubmit={handleSubmit}>
-                <Row className="mb-3">
-                  <Form.Group as={Col} controlId="lastName">
-                    <Form.Label>Last Name</Form.Label>
-                    <Form.Control
-                      type="text"
-                      onChange={handleFormChange}
-                      required
-                      name="lastName"
-                      value={shipInfo.lastName}
-                    />
-                  </Form.Group>
-                  <Form.Group as={Col} controlId="firstName">
-                    <Form.Label>First Name</Form.Label>
-                    <Form.Control
-                      type="text"
-                      onChange={handleFormChange}
-                      required
-                      name="firstName"
-                      value={shipInfo.firstName}
-                    />
-                  </Form.Group>
-                </Row>
-
-                <Form.Group className="mb-3" controlId="formGridAddress1">
-                  <Form.Label>Phone</Form.Label>
-                  <Form.Control
-                    type="tel"
-                    placeholder="(123) 456-7890"
-                    onChange={handleFormChange}
-                    required
-                    name="contact"
-                    value={shipInfo.contact}
-                  />
-                </Form.Group>
-
-                <Form.Group className="mb-3" controlId="addressLine1">
-                  <Form.Label>Address Line 1</Form.Label>
-                  <Form.Control
-                    placeholder="Street address"
-                    onChange={handleFormChange}
-                    required
-                    name="addressLine1"
-                    value={shipInfo.addressLine1}
-                  />
-                </Form.Group>
-
-                <Form.Group className="mb-3" controlId="addressLine2">
-                  <Form.Label>
-                    Address Line 2{" "}
-                    <span className="text-muted">(optional)</span>
-                  </Form.Label>
-                  <Form.Control
-                    placeholder="Apartment, suite, unit, building, floor"
-                    onChange={handleFormChange}
-                    name="addressLine2"
-                    value={shipInfo.addressLine2}
-                  />
-                </Form.Group>
-
-                <Row className="mb-3">
-                  <Form.Group as={Col} controlId="formGridCity">
-                    <Form.Label>City</Form.Label>
-                    <Form.Control
-                      onChange={handleFormChange}
-                      required
-                      name="city"
-                      value={shipInfo.city}
-                    />
-                  </Form.Group>
-                  <Form.Group as={Col} controlId="formGridState">
-                    <Form.Label>State</Form.Label>
-                    <Form.Control
-                      onChange={handleFormChange}
-                      required
-                      name="state"
-                      value={shipInfo.state}
-                    />
-                  </Form.Group>
-                  <Form.Group as={Col} controlId="formGridZip">
-                    <Form.Label>ZIP Code</Form.Label>
-                    <Form.Control
-                      onChange={handleFormChange}
-                      required
-                      name="zipCode"
-                      value={shipInfo.zipCode}
-                    />
-                  </Form.Group>
-                </Row>
-
-                <div className="mobile-receipt-area">
-                  <OrderReceipt />
-                </div>
-
-                <div>
-                  <h2 className="payment-title">Payment Information</h2>
-                  <PaymentForm
-                    handleInputFocus={handleInputFocus}
-                    cardValue={cardValue}
-                    handlePaymentInfoChange={handlePaymentInfoChange}
-                  />
-                </div>
-
-                <Button
-                  variant="dark"
-                  className="payment-button pay-button"
-                  type="submit"
-                >
-                  Place Order
-                </Button>
-              </Form>
-            </div>
-          </div>
-        </Col>
-        <Col lg={5} className="receipt-area">
-          <OrderReceipt />
-        </Col>
-      </Row>
-    </Container>
+    <div className="flex flex-col gap-6 md:flex-row">
+      <div className="w-full md:w-1/2">
+        <Cards
+          cvc={cardValue.cvc}
+          expiry={cardValue.expiry}
+          focused={cardValue.focus || undefined}
+          name={cardValue.name}
+          number={cardValue.number}
+        />
+      </div>
+      <div className="form-area w-full md:w-1/2">
+        <input
+          type="tel"
+          name="number"
+          placeholder="Card Number"
+          onChange={handlePaymentInfoChange}
+          onFocus={handleInputFocus}
+          required
+          maxLength={16}
+          minLength={16}
+          value={cardValue.number}
+          className="mb-3 w-full rounded border border-gray-300 px-3 py-2"
+        />
+        <input
+          type="text"
+          name="name"
+          placeholder="Name"
+          onChange={handlePaymentInfoChange}
+          onFocus={handleInputFocus}
+          required
+          value={cardValue.name}
+          className="mb-3 w-full rounded border border-gray-300 px-3 py-2"
+        />
+        <div className="grid grid-cols-2 gap-3">
+          <input
+            type="text"
+            name="expiry"
+            placeholder="MM/DD"
+            onChange={handlePaymentInfoChange}
+            onFocus={handleInputFocus}
+            required
+            value={cardValue.expiry}
+            maxLength={7}
+            className="w-full rounded border border-gray-300 px-3 py-2"
+          />
+          <input
+            type="text"
+            name="cvc"
+            placeholder="CVC"
+            onChange={handlePaymentInfoChange}
+            onFocus={handleInputFocus}
+            required
+            maxLength={3}
+            value={cardValue.cvc}
+            className="w-full rounded border border-gray-300 px-3 py-2"
+          />
+        </div>
+      </div>
+    </div>
   );
 };
 

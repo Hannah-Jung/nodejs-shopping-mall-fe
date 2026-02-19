@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import { Search } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 interface SearchBoxProps {
@@ -28,7 +27,7 @@ const SearchBox = ({
 
   return (
     <div className="search-box">
-      <FontAwesomeIcon icon={faSearch} />
+      <Search className="size-4" />
       <input
         type="text"
         placeholder={placeholder}

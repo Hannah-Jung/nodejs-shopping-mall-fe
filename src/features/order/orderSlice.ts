@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { AppDispatch } from "../store";
 
-/** 주문 한 줄 아이템 */
 export interface OrderItem {
   productId: string;
   price: number;
@@ -9,7 +8,6 @@ export interface OrderItem {
   qty: number;
 }
 
-/** 주문 (API 응답 / 목록·상세 공용) */
 export interface Order {
   _id: string;
   userId: string;

@@ -19,7 +19,7 @@ export interface UserState {
 
 const initialState: UserState = {
   user: null,
-  loading: false,
+  loading: !!sessionStorage.getItem("token"),
   loginError: null,
   registrationError: null,
   success: false,
@@ -35,8 +35,16 @@ export const loginWithEmail = createAsyncThunk<
     sessionStorage.setItem("token", data.token ?? "");
     return data;
   } catch (err: unknown) {
-    const e = err as { error?: string; message?: string };
-    return rejectWithValue(e?.error ?? e?.message ?? "Login failed");
+    const e = err as {
+      response?: { data?: { message?: string; error?: string } };
+      message?: string;
+    };
+    const msg =
+      e?.response?.data?.message ??
+      e?.response?.data?.error ??
+      e?.message ??
+      "Invalid email or password. Please try again.";
+    return rejectWithValue(msg);
   }
 });
 
@@ -55,6 +63,36 @@ export interface RegisterUserArg {
   password: string;
   navigate: (path: string) => void;
 }
+
+export const checkEmailAvailability = createAsyncThunk<
+  { available: boolean; message?: string },
+  string,
+  { rejectValue: { available: boolean; message: string } }
+>("user/checkEmailAvailability", async (email, { rejectWithValue }) => {
+  try {
+    const { data } = await api.get<{
+      status: string;
+      available: boolean;
+      message?: string;
+    }>("/user/check-email", { params: { email: email.trim() } });
+    const available = data?.available ?? true;
+    const message = data?.message ?? "This email is already registered";
+    if (!available) {
+      return rejectWithValue({ available: false, message });
+    }
+    return { available: true };
+  } catch (err: unknown) {
+    const e = err as {
+      response?: { data?: { message?: string } };
+      message?: string;
+    };
+    const msg =
+      e?.response?.data?.message ??
+      e?.message ??
+      "This email is already registered";
+    return rejectWithValue({ available: false, message: msg });
+  }
+});
 
 export const registerUser = createAsyncThunk<
   User,
@@ -143,8 +181,16 @@ const userSlice = createSlice({
         state.loading = false;
         state.loginError = action.payload ?? null;
       })
+      .addCase(loginWithToken.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(loginWithToken.fulfilled, (state, action) => {
         state.user = action.payload.user;
+        state.loading = false;
+      })
+      .addCase(loginWithToken.rejected, (state) => {
+        state.loading = false;
+        state.user = null;
       });
   },
 });
@@ -152,7 +198,6 @@ const userSlice = createSlice({
 export const { clearErrors, logout } = userSlice.actions;
 export default userSlice.reducer;
 
-/** 컴포넌트에서 dispatch(logoutThunk()) 로 사용 */
 export const logoutThunk =
   (): ((dispatch: AppDispatch) => void) => (dispatch: AppDispatch) => {
     sessionStorage.removeItem("token");

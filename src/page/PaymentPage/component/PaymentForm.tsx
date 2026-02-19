@@ -1,85 +1,6 @@
-// import React from "react";
-// import { Col, Form, Row } from "react-bootstrap";
-// import Cards from "react-credit-cards-2";
-// import "react-credit-cards-2/dist/es/styles-compiled.css";
-
-// const PaymentForm = ({
-//   handleInputFocus,
-//   cardValue,
-//   handlePaymentInfoChange,
-// }) => {
-//   return (
-//     <Row className="display-flex">
-//       <Col md={6} xs={12}>
-//         <Cards
-//           cvc={cardValue.cvc}
-//           expiry={cardValue.expiry}
-//           focused={cardValue.focus}
-//           name={cardValue.name}
-//           number={cardValue.number}
-//         />
-//       </Col>
-//       <Col md={6} xs={12}>
-//         <div className="form-area">
-//           <Form.Control
-//             type="tel"
-//             name="number"
-//             placeholder="Card Number"
-//             onChange={handlePaymentInfoChange}
-//             onFocus={handleInputFocus}
-//             required
-//             maxLength={16}
-//             minLength={16}
-//             value={cardValue.number}
-//           />
-
-//           <Form.Control
-//             type="text"
-//             name="name"
-//             placeholder="Name"
-//             onChange={handlePaymentInfoChange}
-//             onFocus={handleInputFocus}
-//             required
-//             value={cardValue.name}
-//           />
-//           <Row>
-//             <Col>
-//               <Form.Control
-//                 type="text"
-//                 name="expiry"
-//                 placeholder="MM/DD"
-//                 onChange={handlePaymentInfoChange}
-//                 onFocus={handleInputFocus}
-//                 required
-//                 value={cardValue.expiry}
-//                 maxLength={7}
-//               />
-//             </Col>
-//             <Col>
-//               <Form.Control
-//                 type="text"
-//                 name="cvc"
-//                 placeholder="CVC"
-//                 onChange={handlePaymentInfoChange}
-//                 onFocus={handleInputFocus}
-//                 required
-//                 maxLength={3}
-//                 value={cardValue.cvc}
-//               />
-//             </Col>
-//           </Row>
-//         </div>
-//       </Col>
-//     </Row>
-//   );
-// };
-
-// export default PaymentForm;
-import { Col, Form, Row } from "react-bootstrap";
 import Cards from "react-credit-cards-2";
 import "react-credit-cards-2/dist/es/styles-compiled.css";
 
-/** react-credit-cards-2 Cards 컴포넌트의 focused 값 */
 export type CardFocused = "number" | "name" | "expiry" | "cvc";
 
 export interface PaymentCardValue {
@@ -102,8 +23,8 @@ const PaymentForm = ({
   handlePaymentInfoChange,
 }: PaymentFormProps) => {
   return (
-    <Row className="display-flex">
-      <Col md={6} xs={12}>
+    <div className="flex flex-col gap-6 md:flex-row">
+      <div className="w-full md:w-1/2">
         <Cards
           cvc={cardValue.cvc}
           expiry={cardValue.expiry}
@@ -111,58 +32,56 @@ const PaymentForm = ({
           name={cardValue.name}
           number={cardValue.number}
         />
-      </Col>
-      <Col md={6} xs={12}>
-        <div className="form-area">
-          <Form.Control
-            type="tel"
-            name="number"
-            placeholder="Card Number"
-            onChange={handlePaymentInfoChange}
-            onFocus={handleInputFocus}
-            required
-            maxLength={16}
-            minLength={16}
-            value={cardValue.number}
-          />
-          <Form.Control
+      </div>
+      <div className="form-area w-full md:w-1/2">
+        <input
+          type="tel"
+          name="number"
+          placeholder="Card Number"
+          onChange={handlePaymentInfoChange}
+          onFocus={handleInputFocus}
+          required
+          maxLength={16}
+          minLength={16}
+          value={cardValue.number}
+          className="mb-3 w-full rounded border border-gray-300 px-3 py-2"
+        />
+        <input
+          type="text"
+          name="name"
+          placeholder="Name"
+          onChange={handlePaymentInfoChange}
+          onFocus={handleInputFocus}
+          required
+          value={cardValue.name}
+          className="mb-3 w-full rounded border border-gray-300 px-3 py-2"
+        />
+        <div className="grid grid-cols-2 gap-3">
+          <input
             type="text"
-            name="name"
-            placeholder="Name"
+            name="expiry"
+            placeholder="MM/DD"
             onChange={handlePaymentInfoChange}
             onFocus={handleInputFocus}
             required
-            value={cardValue.name}
+            value={cardValue.expiry}
+            maxLength={7}
+            className="w-full rounded border border-gray-300 px-3 py-2"
           />
-          <Row>
-            <Col>
-              <Form.Control
-                type="text"
-                name="expiry"
-                placeholder="MM/DD"
-                onChange={handlePaymentInfoChange}
-                onFocus={handleInputFocus}
-                required
-                value={cardValue.expiry}
-                maxLength={7}
-              />
-            </Col>
-            <Col>
-              <Form.Control
-                type="text"
-                name="cvc"
-                placeholder="CVC"
-                onChange={handlePaymentInfoChange}
-                onFocus={handleInputFocus}
-                required
-                maxLength={3}
-                value={cardValue.cvc}
-              />
-            </Col>
-          </Row>
+          <input
+            type="text"
+            name="cvc"
+            placeholder="CVC"
+            onChange={handlePaymentInfoChange}
+            onFocus={handleInputFocus}
+            required
+            maxLength={3}
+            value={cardValue.cvc}
+            className="w-full rounded border border-gray-300 px-3 py-2"
+          />
         </div>
-      </Col>
-    </Row>
+      </div>
+    </div>
   );
 };
 

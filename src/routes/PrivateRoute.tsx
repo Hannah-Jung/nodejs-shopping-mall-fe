@@ -6,9 +6,19 @@ interface PrivateRouteProps {
 }
 
 const PrivateRoute = ({ permissionLevel }: PrivateRouteProps) => {
-  const user = useAppSelector((state) => state.user.user);
+  const { user, loading } = useAppSelector((state) => state.user);
+  const hasToken = !!sessionStorage.getItem("token");
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (loading || (hasToken && !user)) {
+    return <div>Loading...</div>;
+  }
+
   const isAuthenticated =
-    user?.level === permissionLevel || user?.level === "admin";
+    user && (user.level === "admin" || user.level === permissionLevel);
 
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" />;
 };

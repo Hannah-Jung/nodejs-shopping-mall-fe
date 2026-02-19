@@ -1,15 +1,43 @@
-.login-button-area{
-    align-items: center;
+.login-button-area {
+  align-items: center;
 }
 
-.login-form{
-    width: 100%;
-      
-  }
-  .login-area{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    max-width: 550px;
-  }
+.login-form {
+  width: 100%;
+
+}
+
+.login-area {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.login-form-card {
+  border-radius: 0;
+}
+
+.login-area [data-slot="button"] {
+  border-radius: 0;
+  background-color: #000;
+  color: #fff;
+  border-color: #000;
+  text-decoration: none;
+}
+
+.login-area [data-slot="button"]:hover {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+  text-decoration: none;
+}
+
+.login-area [data-slot="input"] {
+  border-radius: 0;
+}
+
+.login-area .google-login-wrap>div [class*="LgbsSe"] {
+  border-radius: 0 !important;
+}

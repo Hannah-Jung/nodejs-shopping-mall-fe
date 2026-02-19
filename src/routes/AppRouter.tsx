@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router";
 import AdminOrderPage from "../page/AdminOrderPage/AdminOrderPage";
-import AdminProduct from "../page/AdminProductPage/AdminProductPage";
+import AdminProductPage from "../page/AdminProductPage/AdminProductPage";
 import CartPage from "../page/CartPage/CartPage";
 import Login from "../page/LoginPage/LoginPage";
 import MyPage from "../page/MyPage/MyPage";
@@ -25,7 +25,7 @@ const AppRouter = () => {
         <Route path="/account/purchase" element={<MyPage />} />
       </Route>
       <Route element={<PrivateRoute permissionLevel="admin" />}>
-        <Route path="/admin/product" element={<AdminProduct />} />
+        <Route path="/admin/product" element={<AdminProductPage />} />
         <Route path="/admin/order" element={<AdminOrderPage />} />
       </Route>
     </Routes>
