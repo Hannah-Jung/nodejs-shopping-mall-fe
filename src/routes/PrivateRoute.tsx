@@ -18,7 +18,7 @@ const PrivateRoute = ({ permissionLevel }: PrivateRouteProps) => {
   }
 
   const isAuthenticated =
-    user && (user.level === "admin" || user.level === permissionLevel);
+    user && (user.role === "admin" || user.role === permissionLevel);
 
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" />;
 };

@@ -1,6 +1,6 @@
 export function currencyFormat(value: number | undefined): string {
   const number = value !== undefined ? value : 0;
-  return number.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+  return number.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
 }
 
 export function cc_expires_format(string: string): string {

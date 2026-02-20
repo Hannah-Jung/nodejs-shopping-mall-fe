@@ -7,7 +7,7 @@ export interface Product {
   _id: string;
   sku: string;
   name: string;
-  image: string;
+  image: string[];
   category: string[];
   description: string;
   price: number;
@@ -23,6 +23,7 @@ export interface ProductState {
   loading: boolean;
   error: string;
   totalPageNum: number;
+  totalCount: number;
   success: boolean;
 }
 
@@ -32,12 +33,14 @@ const initialState: ProductState = {
   loading: false,
   error: "",
   totalPageNum: 1,
+  totalCount: 0,
   success: false,
 };
 
 interface GetProductListResponse {
   productList: Product[];
   totalPageNum: number;
+  totalCount: number;
 }
 
 export const getProductList = createAsyncThunk<
@@ -143,6 +146,7 @@ const productSlice = createSlice({
       state.error = "";
       state.productList = action.payload?.productList ?? [];
       state.totalPageNum = action.payload?.totalPageNum ?? 1;
+      state.totalCount = action.payload?.totalCount ?? 0;
     });
     builder.addCase(getProductList.rejected, (state, action) => {
       state.loading = false;

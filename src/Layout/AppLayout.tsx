@@ -34,12 +34,12 @@ const AppLayout = ({ children }: AppLayoutProps) => {
       {location.pathname.includes("admin") ? (
         <>
           <Navbar user={user} />
-          <div className="flex min-h-screen flex-col md:flex-row">
-            <div className="w-full md:w-1/4 md:min-w-[200px] sidebar mobile-sidebar">
+          <div className="flex h-[calc(100vh-74px)] overflow-hidden">
+            <div className="min-w-[200px] min-h-screen sidebar mobile-sidebar">
               <Sidebar />
             </div>
-            <div className="flex-1 w-full md:w-3/4">
-              <main key={location.pathname} className="page-transition">
+            <div className="flex-1 overflow-y-auto">
+              <main key={location.pathname} className="page-transition p-4">
                 {children}
               </main>
             </div>

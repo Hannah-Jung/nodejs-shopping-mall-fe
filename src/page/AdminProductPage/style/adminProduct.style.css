@@ -1,50 +1,93 @@
-.card-area{
-    margin-top:20px;
-}
-.admin-product-card{
-    border:1px solid red;
-
-}
-.tag{
-    margin-left:10px
+:root {
+    --primary: #F97316;
 }
 
-.display-flex{
-    display:flex;
+.card-area {
+    margin-top: 20px;
+}
+
+.admin-product-card {
+    border: 1px solid red;
+
+}
+
+.tag {
+    margin-left: 10px
+}
+
+.display-flex {
+    display: flex;
     align-items: center;
 }
-.locate-center{
+
+.locate-center {
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
 }
-.stock{
+
+.stock {
     margin-right: 10px;
 }
 
 
-.mt-2{
+.mt-2 {
     margin-top: 20px;
 }
 
-.form-container{
-    padding:20px
+.form-container {
+    padding: 20px
 }
-.mr-1{
+
+.mr-1 {
     margin-right: 10px;
 }
 
-.upload-image{
+.upload-image {
     max-width: 458px;
-    width:100%
+    width: 100%
 }
-.display-center{
+
+.display-center {
     display: flex;
     justify-content: center;
 }
-.error-message{
+
+.error-message {
     color: red;
     font-size: 10pt;
     padding-right: 10px;
+}
+
+.pagination .page-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    background-color: white;
+}
+
+.pagination .page-link {
+    cursor: pointer !important;
+    width: 100%;
+    text-align: center;
+}
+
+.pagination .Active {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+}
+
+.pagination .Active .page-link {
+    color: white !important;
+    cursor: default !important;
+}
+
+.pagination .disabled {
+    opacity: 0.3;
+}
+
+.pagination .disabled .page-link {
+    cursor: not-allowed !important;
 }

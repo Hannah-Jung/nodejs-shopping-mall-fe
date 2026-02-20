@@ -67,8 +67,16 @@ const Navbar = ({ user }: NavbarProps) => {
     "Trader Joe's",
   ];
 
+  const isAdmin = user?.role === "admin";
+
   return (
-    <header className="sticky top-0 z-50 flex items-center justify-between gap-4 border-b border-border bg-primary-foreground px-6 py-3">
+    <header
+      className={`sticky top-0 z-50 flex items-center justify-between gap-4 border-b px-6 py-3 ${
+        isAdmin
+          ? "border-black bg-black"
+          : "border-border bg-primary-foreground"
+      }`}
+    >
       <Link
         to="/"
         className="flex items-center gap-2 font-medium text-xl cursor-pointer text-primary hover:opacity-90 transition-opacity"
@@ -79,12 +87,28 @@ const Navbar = ({ user }: NavbarProps) => {
       </Link>
 
       <div className="flex-1 max-w-2xl mx-4">
-        <div className="group flex items-center gap-2 rounded-md border border-input bg-muted/30 px-4 py-2.5 transition-all duration-500 ease-out focus-within:border-primary/75">
-          <Search className="size-4 shrink-0 text-muted-foreground transition-colors duration-300 group-focus-within:text-primary" />
+        <div
+          className={`group flex items-center gap-2 rounded-md border px-4 py-2.5 transition-all duration-500 ease-out ${
+            isAdmin
+              ? "border-black bg-muted/30 focus-within:border-primary/75"
+              : "border-input bg-muted/30 focus-within:border-primary/75"
+          }`}
+        >
+          <Search
+            className={`size-4 shrink-0 transition-colors duration-300 ${
+              isAdmin
+                ? "text-gray-400 group-focus-within:text-primary"
+                : "text-muted-foreground group-focus-within:text-primary"
+            }`}
+          />
           <input
             type="search"
             placeholder="Search"
-            className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            className={`w-full bg-transparent text-sm outline-none ${
+              isAdmin
+                ? "placeholder:text-gray-400 text-white"
+                : "placeholder:text-muted-foreground"
+            }`}
             onKeyDown={onCheckEnter}
           />
         </div>
@@ -94,10 +118,12 @@ const Navbar = ({ user }: NavbarProps) => {
         <button
           type="button"
           onClick={() => {}}
-          className="relative p-2 rounded-full hover:bg-muted transition-colors"
+          className={`relative p-2 rounded-full transition-colors ${
+            isAdmin ? "hover:bg-white/10" : "hover:bg-muted"
+          }`}
           aria-label="Wishlist"
         >
-          <Heart className="size-5" />
+          <Heart className={`size-5 ${isAdmin ? "text-white" : ""}`} />
           {wishlistCount >= 1 && (
             <span
               className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground"
@@ -110,10 +136,12 @@ const Navbar = ({ user }: NavbarProps) => {
 
         <Link
           to="/cart"
-          className="relative p-2 rounded-full hover:bg-muted transition-colors"
+          className={`relative p-2 rounded-full transition-colors ${
+            isAdmin ? "hover:bg-white/10" : "hover:bg-muted"
+          }`}
           aria-label="Cart"
         >
-          <ShoppingCart className="size-5" />
+          <ShoppingCart className={`size-5 ${isAdmin ? "text-white" : ""}`} />
           {cartItemCount >= 1 && (
             <span
               className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground"
@@ -128,13 +156,17 @@ const Navbar = ({ user }: NavbarProps) => {
           <button
             type="button"
             onClick={() => setProfileOpen((o) => !o)}
-            className="flex items-center gap-1 p-2 rounded-full hover:bg-muted transition-colors"
+            className={`flex items-center gap-1 p-2 rounded-full transition-colors ${
+              isAdmin ? "hover:bg-white/25" : "hover:bg-muted"
+            }`}
             aria-label={user ? "Profile menu" : "Log in or sign up"}
             aria-expanded={profileOpen}
           >
             {user ? (
               <Avatar className="h-8 w-8 border-2 border-primary text-primary">
-                <AvatarFallback className="bg-transparent text-base font-semibold">
+                <AvatarFallback
+                  className={`bg-transparent font-semibold ${isAdmin ? "text-primary" : ""}`}
+                >
                   {user.firstName.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -152,6 +184,17 @@ const Navbar = ({ user }: NavbarProps) => {
           >
             {user ? (
               <>
+                {user?.role === "admin" && (
+                  <Link
+                    to="/admin/dashboard"
+                    className="group flex min-h-[2.25rem] items-center gap-3 px-4 py-2 text-sm transition-colors duration-300 hover:bg-muted"
+                    onClick={() => setProfileOpen(false)}
+                  >
+                    <Settings className="size-4 shrink-0 text-muted-foreground transition-colors duration-300 group-hover:text-primary" />
+                    Dashboard
+                  </Link>
+                )}
+                <div className="border-t border-border" />
                 <Link
                   to="/account/purchase"
                   className="group flex min-h-[2.25rem] items-center gap-3 px-4 py-2 text-sm transition-colors duration-300 hover:bg-muted"
@@ -168,16 +211,6 @@ const Navbar = ({ user }: NavbarProps) => {
                   <Package className="size-4 shrink-0 text-muted-foreground transition-colors duration-300 group-hover:text-primary" />
                   My Orders
                 </Link>
-                {user?.level === "admin" && (
-                  <Link
-                    to="/admin/product"
-                    className="group flex min-h-[2.25rem] items-center gap-3 px-4 py-2 text-sm transition-colors duration-300 hover:bg-muted"
-                    onClick={() => setProfileOpen(false)}
-                  >
-                    <Settings className="size-4 shrink-0 text-muted-foreground transition-colors duration-300 group-hover:text-primary" />
-                    Manage
-                  </Link>
-                )}
                 <div className="border-t border-border" />
                 <button
                   type="button"

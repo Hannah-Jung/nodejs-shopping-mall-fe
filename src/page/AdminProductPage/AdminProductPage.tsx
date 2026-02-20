@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import ReactPaginate from "react-paginate";
 import SearchBox from "../../common/component/SearchBox";
 import NewItemDialog from "./component/NewItemDialog";
@@ -12,28 +12,31 @@ import {
 } from "../../features/product/productSlice";
 import type { Product } from "../../features/product/productSlice";
 import { useAppDispatch, useAppSelector } from "../../features/hooks";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
 const tableHeader = [
   "#",
-  "Sku",
-  "Name",
-  "Price",
-  "Stock",
-  "Image",
-  "Status",
-  "",
+  "SKU",
+  "IMAGE",
+  "NAME",
+  "PRICE",
+  "STOCK",
+  "STATUS",
+  "ACTION",
 ];
 
 const AdminProductPage = () => {
+  const navigate = useNavigate();
   const [query] = useSearchParams();
   const dispatch = useAppDispatch();
-  const { productList, totalPageNum } = useAppSelector(
+  const { productList, totalPageNum, totalCount } = useAppSelector(
     (state) => state.product,
   );
   const [showDialog, setShowDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState<Record<string, unknown>>({
     page: Number(query.get("page")) || 1,
     name: query.get("name") ?? "",
+    sort: "createdAt-desc",
   });
   const [mode, setMode] = useState<"new" | "edit">("new");
 
@@ -57,7 +60,13 @@ const AdminProductPage = () => {
   };
 
   const handlePageClick = ({ selected }: { selected: number }) => {
-    setSearchQuery((prev) => ({ ...prev, page: selected + 1 }));
+    const page = selected + 1;
+
+    setSearchQuery((prev) => ({ ...prev, page }));
+
+    const params = new URLSearchParams(query);
+    params.set("page", page.toString());
+    navigate(`/admin/product?${params.toString()}`);
   };
 
   return (
@@ -71,8 +80,12 @@ const AdminProductPage = () => {
             field="name"
           />
         </div>
-        <Button className="mt-2 mb-2" onClick={handleClickNewItem}>
-          Add New Item +
+        <Button
+          className="mt-2 mb-2 cursor-pointer"
+          onClick={handleClickNewItem}
+        >
+          <Plus className="size-5" strokeWidth={2} />
+          Add
         </Button>
 
         <ProductTable
@@ -80,34 +93,41 @@ const AdminProductPage = () => {
           data={productList}
           deleteItem={deleteItem}
           openEditForm={openEditForm}
+          totalCount={totalCount || 0}
+          currentPage={Number(searchQuery.page)}
         />
         <ReactPaginate
-          nextLabel="next >"
+          nextLabel={<ChevronRight className="size-4" />}
           onPageChange={handlePageClick}
           pageRangeDisplayed={5}
           pageCount={Math.max(1, totalPageNum)}
           forcePage={Number(searchQuery.page) - 1 || 0}
-          previousLabel="< previous"
+          previousLabel={<ChevronLeft className="size-4" />}
           renderOnZeroPageCount={null}
-          pageClassName="page-item"
-          pageLinkClassName="page-link"
-          previousClassName="page-item"
-          previousLinkClassName="page-link"
-          nextClassName="page-item"
-          nextLinkClassName="page-link"
+          containerClassName="pagination flex justify-center items-center gap-2 mt-8 list-none select-none"
+          pageClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
+          pageLinkClassName="page-link px-4 py-2 block hover:bg-zinc-100 cursor-pointer transition-colors text-sm"
+          previousClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
+          previousLinkClassName="page-link px-3 py-2 block hover:bg-zinc-100 cursor-pointer text-sm"
+          nextClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
+          nextLinkClassName="page-link px-3 py-2 block hover:bg-zinc-100 cursor-pointer text-sm"
           breakLabel="..."
-          breakClassName="page-item"
-          breakLinkClassName="page-link"
-          containerClassName="pagination"
-          activeClassName="active"
-          className="display-center list-style-none"
+          breakClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
+          breakLinkClassName="page-link px-4 py-2 block"
+          activeClassName="Active bg-zinc-900 border-zinc-900 text-white"
         />
 
         <NewItemDialog
           mode={mode}
           showDialog={showDialog}
           setShowDialog={setShowDialog}
-          onSuccess={() => dispatch(getProductList(searchQuery))}
+          onSuccess={() => {
+            if (mode === "new") {
+              setSearchQuery((prev) => ({ ...prev, page: 1 }));
+            } else {
+              dispatch(getProductList(searchQuery));
+            }
+          }}
         />
       </div>
     </div>

@@ -232,7 +232,6 @@ body {
 
 #sidebar-wrapper {
   min-height: 100vh !important;
-  background-color: red;
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
 }
 
@@ -244,10 +243,10 @@ body {
 }
 
 .sidebar-item:hover {
-  color: white;
-  background-color: red;
+  color: var(--primaryForeground);
   font-weight: bold;
 }
+
 
 .sidebar-area {
   padding-left: 0;
@@ -257,8 +256,6 @@ body {
   max-width: 300px;
   padding: 20px;
   background-color: rgb(248, 249, 250);
-  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
-  padding-left: 40px;
 }
 
 .mobile-sidebar-toggle {
@@ -294,7 +291,7 @@ body {
 
   .sidebar {
     max-width: 100%;
-    padding: 0px;
+    padding: 20px;
   }
 
   .mobile-sidebar {

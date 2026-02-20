@@ -2,6 +2,7 @@ import { Component } from "react";
 import { Button } from "@/components/ui/button";
 import "../App.css";
 import "../common/style/common.style.css";
+import { Plus } from "lucide-react";
 
 const CLOUDNAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME as string;
 const UPLOADPRESET = import.meta.env.VITE_CLOUDINARY_PRESET as string;
@@ -41,8 +42,14 @@ class CloudinaryUploadWidget extends Component<CloudinaryUploadWidgetProps> {
 
   render() {
     return (
-      <Button id="upload_widget" type="button" size="sm" className="ml-2">
-        Upload Image +
+      <Button
+        id="upload_widget"
+        type="button"
+        size="sm"
+        className="cursor-pointer"
+      >
+        <Plus />
+        Upload Image
       </Button>
     );
   }

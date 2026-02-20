@@ -28,7 +28,7 @@ const LandingPage = () => {
             {name === "" ? (
               <h2>We're Getting Ready!</h2>
             ) : (
-              <h2>{name}과 일치한 상품이 없습니다!`</h2>
+              <h2>No results with {name}</h2>
             )}
           </div>
         )}

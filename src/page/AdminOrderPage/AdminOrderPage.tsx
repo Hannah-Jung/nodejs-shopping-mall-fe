@@ -98,7 +98,7 @@ const AdminOrderPage = () => {
           breakClassName="page-item"
           breakLinkClassName="page-link"
           containerClassName="pagination"
-          activeClassName="active"
+          activeClassName="Active"
           className="display-center list-style-none"
         />
       </div>
