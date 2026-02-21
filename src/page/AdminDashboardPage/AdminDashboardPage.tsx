@@ -19,39 +19,27 @@ const AdminDashboardPage = () => {
     const fetchStats = async () => {
       try {
         const [productRes, orderRes] = await Promise.allSettled([
-          api.get<{ totalItemNum?: number; productList?: unknown[] }>(
+          api.get<{ totalCount?: number; productList?: unknown[] }>(
             "/product",
             {
               params: { page: 1, name: "" },
             },
           ),
-          api.get<{ totalItemNum?: number; orderList?: unknown[] }>("/order", {
+          api.get<{ totalCount?: number; orderList?: unknown[] }>("/order", {
             params: { page: 1 },
           }),
         ]);
 
-        if (
-          productRes.status === "fulfilled" &&
-          productRes.value.data?.totalItemNum != null
-        ) {
-          setProductCount(productRes.value.data.totalItemNum);
-        } else if (
-          productRes.status === "fulfilled" &&
-          Array.isArray(productRes.value.data?.productList)
-        ) {
-          setProductCount(productRes.value.data.productList.length);
+        if (productRes.status === "fulfilled") {
+          const data = productRes.value.data;
+          const count = data?.totalCount ?? data?.productList?.length ?? 0;
+          setProductCount(count);
         }
 
-        if (
-          orderRes.status === "fulfilled" &&
-          orderRes.value.data?.totalItemNum != null
-        ) {
-          setOrderCount(orderRes.value.data.totalItemNum);
-        } else if (
-          orderRes.status === "fulfilled" &&
-          Array.isArray(orderRes.value.data?.orderList)
-        ) {
-          setOrderCount(orderRes.value.data.orderList.length);
+        if (orderRes.status === "fulfilled") {
+          const data = orderRes.value.data;
+          const count = data?.totalCount ?? data?.orderList?.length ?? 0;
+          setOrderCount(count);
         }
       } catch {
       } finally {

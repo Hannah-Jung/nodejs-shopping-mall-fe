@@ -8,9 +8,15 @@ import {
   ShoppingCart,
   User as UserIcon,
   Utensils,
+  X,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Link, useNavigate } from "react-router-dom";
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 import { logoutThunk } from "../../features/user/userSlice";
 import { useAppDispatch, useAppSelector } from "../../features/hooks";
 import type { User } from "@/types/user";
@@ -22,9 +28,16 @@ interface NavbarProps {
 const Navbar = ({ user }: NavbarProps) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const [query] = useSearchParams();
   const { cartItemCount } = useAppSelector((state) => state.cart);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+  const [searchTerm, setSearchTerm] = useState(query.get("name") ?? "");
+  const location = useLocation();
+
+  useEffect(() => {
+    setSearchTerm(query.get("name") ?? "");
+  }, [query]);
 
   const wishlistCount = 0;
 
@@ -58,15 +71,7 @@ const Navbar = ({ user }: NavbarProps) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const menuList = [
-    "Costco",
-    "Sam's Club",
-    "Whole Foods Market",
-    "Target",
-    "Walmart",
-    "Trader Joe's",
-  ];
-
+  const isAdminPath = location.pathname.startsWith("/admin");
   const isAdmin = user?.role === "admin";
 
   return (
@@ -86,33 +91,53 @@ const Navbar = ({ user }: NavbarProps) => {
         <span>PREPT</span>
       </Link>
 
-      <div className="flex-1 max-w-2xl mx-4">
-        <div
-          className={`group flex items-center gap-2 rounded-md border px-4 py-2.5 transition-all duration-500 ease-out ${
-            isAdmin
-              ? "border-black bg-muted/30 focus-within:border-primary/75"
-              : "border-input bg-muted/30 focus-within:border-primary/75"
-          }`}
-        >
-          <Search
-            className={`size-4 shrink-0 transition-colors duration-300 ${
+      {!isAdminPath && (
+        <div className="flex-1 max-w-2xl mx-4">
+          <div
+            className={`group flex items-center gap-2 rounded-md border px-4 py-2.5 transition-all duration-500 ease-out ${
               isAdmin
-                ? "text-gray-400 group-focus-within:text-primary"
-                : "text-muted-foreground group-focus-within:text-primary"
+                ? "border-black bg-muted/30 focus-within:border-primary/75"
+                : "border-input bg-muted/30 focus-within:border-primary/75"
             }`}
-          />
-          <input
-            type="search"
-            placeholder="Search"
-            className={`w-full bg-transparent text-sm outline-none ${
-              isAdmin
-                ? "placeholder:text-gray-400 text-white"
-                : "placeholder:text-muted-foreground"
-            }`}
-            onKeyDown={onCheckEnter}
-          />
+          >
+            <Search
+              className={`size-4 shrink-0 transition-colors duration-300 ${
+                isAdmin
+                  ? "text-gray-400 group-focus-within:text-primary"
+                  : "text-muted-foreground group-focus-within:text-primary"
+              }`}
+            />
+            <input
+              type="text"
+              placeholder="Search"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={`w-full bg-transparent text-sm outline-none ${
+                isAdmin
+                  ? "placeholder:text-gray-400 text-white"
+                  : "placeholder:text-muted-foreground"
+              }`}
+              onKeyDown={onCheckEnter}
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchTerm("");
+                  navigate("/");
+                }}
+                className={`transition-colors ${
+                  isAdmin
+                    ? "text-gray-400 hover:text-white"
+                    : "text-muted-foreground hover:text-primary"
+                }`}
+              >
+                <X className="size-4" />
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="flex items-center gap-1">
         <button

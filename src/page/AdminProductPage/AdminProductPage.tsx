@@ -33,16 +33,46 @@ const AdminProductPage = () => {
     (state) => state.product,
   );
   const [showDialog, setShowDialog] = useState(false);
-  const [searchQuery, setSearchQuery] = useState<Record<string, unknown>>({
-    page: Number(query.get("page")) || 1,
+
+  const [mode, setMode] = useState<"new" | "edit">("new");
+
+  const [searchQuery, setSearchQuery] = useState<Record<string, string>>({
+    page: query.get("page") || "1",
     name: query.get("name") ?? "",
     sort: "createdAt-desc",
   });
-  const [mode, setMode] = useState<"new" | "edit">("new");
 
   useEffect(() => {
-    dispatch(getProductList(searchQuery));
-  }, [searchQuery, dispatch]);
+    const paramsObj: Record<string, string> = {};
+
+    Object.entries(searchQuery).forEach(([key, value]) => {
+      if (value && key !== "sort") {
+        paramsObj[key] = String(value);
+      }
+    });
+
+    const queryString = new URLSearchParams(paramsObj).toString();
+    const currentQueryString = query.toString();
+
+    if (queryString !== currentQueryString) {
+      navigate(queryString ? `?${queryString}` : "");
+    }
+
+    dispatch(getProductList({ ...searchQuery, limit: "5" }));
+  }, [searchQuery, dispatch, navigate]);
+
+  useEffect(() => {
+    const page = query.get("page") || "1";
+    const name = query.get("name") ?? "";
+
+    if (searchQuery.page !== page || searchQuery.name !== name) {
+      setSearchQuery((prev) => ({
+        ...prev,
+        page,
+        name,
+      }));
+    }
+  }, [query]);
 
   const deleteItem = (id: string) => {
     dispatch(deleteProduct(id));
@@ -60,13 +90,7 @@ const AdminProductPage = () => {
   };
 
   const handlePageClick = ({ selected }: { selected: number }) => {
-    const page = selected + 1;
-
-    setSearchQuery((prev) => ({ ...prev, page }));
-
-    const params = new URLSearchParams(query);
-    params.set("page", page.toString());
-    navigate(`/admin/product?${params.toString()}`);
+    setSearchQuery((prev) => ({ ...prev, page: String(selected + 1) }));
   };
 
   return (
@@ -80,6 +104,7 @@ const AdminProductPage = () => {
             field="name"
           />
         </div>
+
         <Button
           className="mt-2 mb-2 cursor-pointer"
           onClick={handleClickNewItem}
@@ -88,34 +113,46 @@ const AdminProductPage = () => {
           Add
         </Button>
 
-        <ProductTable
-          header={tableHeader}
-          data={productList}
-          deleteItem={deleteItem}
-          openEditForm={openEditForm}
-          totalCount={totalCount || 0}
-          currentPage={Number(searchQuery.page)}
-        />
-        <ReactPaginate
-          nextLabel={<ChevronRight className="size-4" />}
-          onPageChange={handlePageClick}
-          pageRangeDisplayed={5}
-          pageCount={Math.max(1, totalPageNum)}
-          forcePage={Number(searchQuery.page) - 1 || 0}
-          previousLabel={<ChevronLeft className="size-4" />}
-          renderOnZeroPageCount={null}
-          containerClassName="pagination flex justify-center items-center gap-2 mt-8 list-none select-none"
-          pageClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
-          pageLinkClassName="page-link px-4 py-2 block hover:bg-zinc-100 cursor-pointer transition-colors text-sm"
-          previousClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
-          previousLinkClassName="page-link px-3 py-2 block hover:bg-zinc-100 cursor-pointer text-sm"
-          nextClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
-          nextLinkClassName="page-link px-3 py-2 block hover:bg-zinc-100 cursor-pointer text-sm"
-          breakLabel="..."
-          breakClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
-          breakLinkClassName="page-link px-4 py-2 block"
-          activeClassName="Active bg-zinc-900 border-zinc-900 text-white"
-        />
+        {productList.length > 0 ? (
+          <>
+            <ProductTable
+              header={tableHeader}
+              data={productList}
+              deleteItem={deleteItem}
+              openEditForm={openEditForm}
+              totalCount={totalCount || 0}
+              currentPage={Number(searchQuery.page)}
+            />
+            <ReactPaginate
+              nextLabel={<ChevronRight className="size-4" />}
+              onPageChange={handlePageClick}
+              pageRangeDisplayed={5}
+              pageCount={Math.max(1, totalPageNum)}
+              forcePage={Number(searchQuery.page) - 1}
+              previousLabel={<ChevronLeft className="size-4" />}
+              renderOnZeroPageCount={null}
+              containerClassName="pagination flex justify-center items-center gap-2 mt-8 list-none select-none"
+              pageClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
+              pageLinkClassName="page-link px-4 py-2 block hover:bg-zinc-100 cursor-pointer transition-colors text-sm"
+              previousClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
+              previousLinkClassName="page-link px-3 py-2 block hover:bg-zinc-100 cursor-pointer text-sm"
+              nextClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
+              nextLinkClassName="page-link px-3 py-2 block hover:bg-zinc-100 cursor-pointer text-sm"
+              breakLabel="..."
+              breakClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
+              breakLinkClassName="page-link px-4 py-2 block"
+              activeClassName="Active bg-zinc-900 border-zinc-900 text-white"
+            />
+          </>
+        ) : (
+          <div className="py-20 text-center">
+            <h2 className="text-xl font-medium text-zinc-500">
+              {searchQuery.name === ""
+                ? "No products available."
+                : `No results for "${searchQuery.name}"`}
+            </h2>
+          </div>
+        )}
 
         <NewItemDialog
           mode={mode}
@@ -123,7 +160,7 @@ const AdminProductPage = () => {
           setShowDialog={setShowDialog}
           onSuccess={() => {
             if (mode === "new") {
-              setSearchQuery((prev) => ({ ...prev, page: 1 }));
+              setSearchQuery((prev) => ({ ...prev, page: "1" }));
             } else {
               dispatch(getProductList(searchQuery));
             }

@@ -6,6 +6,7 @@ import AppRouter from "./routes/AppRouter";
 import { themeColors } from "@/theme/colors";
 import { useAppDispatch } from "./features/hooks";
 import { loginWithToken } from "./features/user/userSlice";
+import ScrollToTop from "./common/component/ScrollToTop";
 
 const root = document.documentElement;
 root.style.setProperty("--primary", themeColors.primary);
@@ -23,6 +24,7 @@ function App() {
 
   return (
     <div>
+      <ScrollToTop />
       <AppLayout>
         <AppRouter />
       </AppLayout>

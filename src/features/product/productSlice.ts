@@ -11,7 +11,7 @@ export interface Product {
   category: string[];
   description: string;
   price: number;
-  stock: Record<string, unknown>;
+  stock: Record<string, number>;
   status?: string;
   isDeleted?: boolean;
 }
@@ -54,7 +54,11 @@ export const getProductList = createAsyncThunk<
         ? query
         : { page: 1, name: "" };
     const { data } = await api.get<GetProductListResponse>("/product", {
-      params: { page: params?.page ?? 1, name: params?.name ?? "" },
+      params: {
+        page: params?.page ?? 1,
+        name: params?.name ?? "",
+        limit: params?.limit,
+      },
     });
     return data;
   } catch (e: unknown) {
