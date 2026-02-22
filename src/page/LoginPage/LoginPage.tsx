@@ -115,7 +115,7 @@ const Login = () => {
 
   return (
     <div className="login-area flex w-full justify-center bg-background pt-8 pb-12">
-      <Card className="login-form-card w-full max-w-sm rounded-none">
+      <Card className="login-form-card w-full max-w-sm rounded-none pt-6">
         <CardHeader>
           <CardTitle className="text-center">LOGIN</CardTitle>
         </CardHeader>
@@ -237,7 +237,7 @@ const Login = () => {
               />
             </GoogleOAuthProvider>
           </div>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-muted-foreground pt-4">
             Don&apos;t have an account yet?{" "}
             <Link
               to="/register"

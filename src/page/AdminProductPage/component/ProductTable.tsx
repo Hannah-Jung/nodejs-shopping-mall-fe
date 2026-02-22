@@ -2,6 +2,17 @@ import { Button } from "@/components/ui/button";
 import type { Product } from "@/features/product/productSlice";
 import { SquarePen, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface ProductTableProps {
   header: string[];
@@ -11,6 +22,8 @@ interface ProductTableProps {
   totalCount: number;
   currentPage: number;
 }
+
+const SIZE_ORDER = ["single", "double", "family"];
 
 const ProductTable = ({
   header,
@@ -89,27 +102,33 @@ const ProductTable = ({
 
                 <td>
                   <div className="space-y-2 p-4">
-                    {Object.entries(product.stock).map(([size, qty]) => (
-                      <div key={size} className="w-20">
-                        <div className="flex justify-between text-[11px] mb-0.5">
-                          <span className="font-semibold uppercase">
-                            {size}
-                          </span>
-                          <span className="font-mono">{qty}</span>
+                    {Object.entries(product.stock)
+                      .sort(([a], [b]) => {
+                        const indexA = SIZE_ORDER.indexOf(a.toLowerCase());
+                        const indexB = SIZE_ORDER.indexOf(b.toLowerCase());
+                        return indexA - indexB;
+                      })
+                      .map(([size, qty]) => (
+                        <div key={size} className="w-20">
+                          <div className="flex justify-between text-[11px] mb-0.5">
+                            <span className="font-semibold uppercase">
+                              {size}
+                            </span>
+                            <span className="font-mono">{qty}</span>
+                          </div>
+                          <div className="h-1.5 w-full bg-zinc-100 rounded-md overflow-hidden">
+                            <div
+                              className={cn(
+                                "h-full rounded-md",
+                                qty < 20 ? "bg-orange-400" : "bg-emerald-500",
+                              )}
+                              style={{
+                                width: `${Math.min((qty / 50) * 100, 100)}%`,
+                              }}
+                            />
+                          </div>
                         </div>
-                        <div className="h-1.5 w-full bg-zinc-100 rounded-md overflow-hidden">
-                          <div
-                            className={cn(
-                              "h-full rounded-md",
-                              qty < 20 ? "bg-orange-400" : "bg-emerald-500",
-                            )}
-                            style={{
-                              width: `${Math.min((qty / 50) * 100, 100)}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 </td>
 
@@ -139,14 +158,52 @@ const ProductTable = ({
                     >
                       <SquarePen className="size-4" />
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 w-8 p-0 sm:w-auto sm:px-2 sm:h-9 hover:text-red-500 hover:bg-zinc-100 transition-all"
-                      onClick={() => deleteItem(product._id)}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 sm:w-auto sm:px-2 sm:h-9 hover:text-red-500 hover:bg-zinc-100 transition-all cursor-pointer"
+                        >
+                          <Trash2 className="size-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="mb-6">
+                            Are you sure you want to delete this?
+                          </AlertDialogTitle>
+                          <div className="flex justify-center w-full mb-6">
+                            <div className="w-24 h-24 rounded-lg overflow-hidden border border-zinc-200 bg-zinc-50 shadow-sm">
+                              <img
+                                src={product.image[0]}
+                                alt={product.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          </div>
+                          <AlertDialogDescription className="mb-2">
+                            <span className="px-1 font-bold text-red-600">
+                              {product.name}
+                            </span>
+                            will be permanently removed from your product list.
+                            <br />
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="cursor-pointer">
+                            Cancel
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deleteItem(product._id)}
+                            className="bg-red-500 hover:bg-red-600 text-white cursor-pointer"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </td>
               </tr>

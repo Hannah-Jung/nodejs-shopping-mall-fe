@@ -70,7 +70,7 @@ const AdminDashboardPage = () => {
           to="/admin/product"
           className="block focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-none"
         >
-          <Card className="h-full border-border bg-card hover:border-primary/50 hover:shadow-md transition-all duration-200 cursor-pointer">
+          <Card className="h-full py-5 border-border bg-card hover:border-primary/50 hover:shadow-md transition-all duration-200 cursor-pointer">
             <CardHeader className="flex flex-row items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-none bg-primary/10 text-primary">
                 <Package className="size-6" />
@@ -95,7 +95,7 @@ const AdminDashboardPage = () => {
           to="/admin/order"
           className="block focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-none"
         >
-          <Card className="h-full border-border bg-card hover:border-primary/50 hover:shadow-md transition-all duration-200 cursor-pointer">
+          <Card className="h-full py-5 border-border bg-card hover:border-primary/50 hover:shadow-md transition-all duration-200 cursor-pointer">
             <CardHeader className="flex flex-row items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-none bg-primary/10 text-primary">
                 <ShoppingCart className="size-6" />

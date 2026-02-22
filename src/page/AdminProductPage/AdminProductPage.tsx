@@ -41,25 +41,20 @@ const AdminProductPage = () => {
     name: query.get("name") ?? "",
     sort: "createdAt-desc",
   });
+  const { success } = useAppSelector((state) => state.product);
 
   useEffect(() => {
-    const paramsObj: Record<string, string> = {};
+    const params = new URLSearchParams();
+    if (searchQuery.page) params.set("page", searchQuery.page);
+    if (searchQuery.name) params.set("name", searchQuery.name);
 
-    Object.entries(searchQuery).forEach(([key, value]) => {
-      if (value && key !== "sort") {
-        paramsObj[key] = String(value);
-      }
-    });
-
-    const queryString = new URLSearchParams(paramsObj).toString();
-    const currentQueryString = query.toString();
-
-    if (queryString !== currentQueryString) {
-      navigate(queryString ? `?${queryString}` : "");
+    const queryString = params.toString();
+    if (queryString !== query.toString()) {
+      navigate(queryString ? `?${queryString}` : "", { replace: true });
     }
 
     dispatch(getProductList({ ...searchQuery, limit: "5" }));
-  }, [searchQuery, dispatch, navigate]);
+  }, [dispatch, searchQuery.page, searchQuery.name, success]);
 
   useEffect(() => {
     const page = query.get("page") || "1";
@@ -75,7 +70,23 @@ const AdminProductPage = () => {
   }, [query]);
 
   const deleteItem = (id: string) => {
-    dispatch(deleteProduct(id));
+    dispatch(deleteProduct(id)).then((response) => {
+      if (response.meta.requestStatus === "fulfilled") {
+        if (productList.length === 1 && Number(searchQuery.page) > 1) {
+          const prevPage = Number(searchQuery.page) - 1;
+
+          setSearchQuery((prev) => ({
+            ...prev,
+            page: String(prevPage),
+          }));
+          dispatch(
+            getProductList({ ...searchQuery, page: prevPage, limit: "5" }),
+          );
+        } else {
+          dispatch(getProductList({ ...searchQuery, limit: "5" }));
+        }
+      }
+    });
   };
 
   const openEditForm = (product: Product) => {
@@ -148,7 +159,7 @@ const AdminProductPage = () => {
           <div className="py-20 text-center">
             <h2 className="text-xl font-medium text-zinc-500">
               {searchQuery.name === ""
-                ? "No products available."
+                ? "No products available"
                 : `No results for "${searchQuery.name}"`}
             </h2>
           </div>

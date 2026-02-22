@@ -230,7 +230,7 @@ const RegisterPage = () => {
 
   return (
     <div className="login-area flex w-full justify-center bg-background pt-8 pb-12">
-      <Card className="login-form-card w-full max-w-md rounded-none">
+      <Card className="login-form-card w-full max-w-md rounded-none pt-6">
         <CardHeader>
           <CardTitle className="text-center">SIGN UP</CardTitle>
         </CardHeader>

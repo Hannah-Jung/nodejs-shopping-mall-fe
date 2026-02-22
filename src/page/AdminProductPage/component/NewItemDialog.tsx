@@ -207,6 +207,8 @@ const NewItemDialog = ({
   };
 
   const handleStockChange = (value: string, index: number) => {
+    const numValue = Number(value);
+    if (numValue < 0) return;
     if (errors.stock) setErrors((prev) => ({ ...prev, stock: "" }));
     setStock((prev) => {
       const next = [...prev];

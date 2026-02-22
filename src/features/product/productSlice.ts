@@ -68,12 +68,17 @@ export const getProductList = createAsyncThunk<
 });
 
 export const getProductDetail = createAsyncThunk<
-  unknown,
+  Product,
   string,
   { rejectValue: string }
->("products/getProductDetail", async (_id, { rejectWithValue }) => {
-  void rejectWithValue;
-  return undefined;
+>("products/getProductDetail", async (id, { rejectWithValue }) => {
+  try {
+    const { data } = await api.get(`/product/${id}`);
+    return data.data;
+  } catch (e: unknown) {
+    const err = e as { error?: string };
+    return rejectWithValue(err?.error ?? "Failed to load product information");
+  }
 });
 
 export const createProduct = createAsyncThunk<
@@ -92,20 +97,29 @@ export const createProduct = createAsyncThunk<
     return data;
   } catch (e: unknown) {
     const err = e as { error?: string };
-    return rejectWithValue(err?.error ?? "Create failed");
+    return rejectWithValue(err?.error ?? "Failed to create");
   }
 });
 
 export const deleteProduct = createAsyncThunk<
-  unknown,
+  string,
   string,
   { rejectValue: string; dispatch: AppDispatch }
->("products/deleteProduct", async (_id, { dispatch, rejectWithValue }) => {
-  void dispatch;
-  void rejectWithValue;
-  return undefined;
+>("products/deleteProduct", async (id, { dispatch, rejectWithValue }) => {
+  try {
+    await api.delete(`/product/${id}`);
+    dispatch(
+      showToastMessage({
+        message: "Product deleted successfully!",
+        status: "success",
+      }),
+    );
+    return id;
+  } catch (e: unknown) {
+    const err = e as { error?: string };
+    return rejectWithValue(err?.error ?? "Failed to delete");
+  }
 });
-
 export interface EditProductArg {
   id: string;
   [key: string]: unknown;
@@ -115,15 +129,24 @@ export const editProduct = createAsyncThunk<
   unknown,
   EditProductArg,
   { rejectValue: string; dispatch: AppDispatch }
->("products/editProduct", async ({ id, ...body }, { rejectWithValue }) => {
-  try {
-    const { data } = await api.patch(`/product/${id}`, body);
-    return data;
-  } catch (e: unknown) {
-    const err = e as { error?: string };
-    return rejectWithValue(err?.error ?? "Edit failed");
-  }
-});
+>(
+  "products/editProduct",
+  async ({ id, ...body }, { dispatch, rejectWithValue }) => {
+    try {
+      const { data } = await api.patch(`/product/${id}`, body);
+      dispatch(
+        showToastMessage({
+          message: "Product edited successfully!",
+          status: "success",
+        }),
+      );
+      return data;
+    } catch (e: unknown) {
+      const err = e as { error?: string };
+      return rejectWithValue(err?.error ?? "Failed to edit");
+    }
+  },
+);
 
 const productSlice = createSlice({
   name: "products",
@@ -144,6 +167,7 @@ const productSlice = createSlice({
     builder.addCase(getProductList.pending, (state) => {
       state.loading = true;
       state.error = "";
+      state.success = false;
     });
     builder.addCase(getProductList.fulfilled, (state, action) => {
       state.loading = false;
@@ -170,18 +194,35 @@ const productSlice = createSlice({
       state.error = action.payload ?? "Create failed";
       state.success = false;
     });
-    builder.addCase(editProduct.pending, (state) => {
+    builder.addCase(editProduct.pending, (state, action) => {
       state.loading = true;
       state.error = "";
     });
-    builder.addCase(editProduct.fulfilled, (state) => {
+    builder.addCase(editProduct.fulfilled, (state, action) => {
       state.loading = false;
       state.success = true;
       state.error = "";
     });
     builder.addCase(editProduct.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.payload ?? "Edit failed";
+      state.error = action.payload ?? "Update failed";
+      state.success = false;
+    });
+    builder.addCase(deleteProduct.fulfilled, (state) => {
+      state.loading = false;
+      state.success = true;
+      state.error = "";
+    });
+    builder.addCase(getProductDetail.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(getProductDetail.fulfilled, (state, action) => {
+      state.loading = false;
+      state.selectedProduct = action.payload;
+    });
+    builder.addCase(getProductDetail.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload ?? "Loading failed";
     });
   },
 });
