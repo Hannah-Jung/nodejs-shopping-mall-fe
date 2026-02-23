@@ -23,6 +23,8 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Flame, Heart } from "lucide-react";
+import { addToCart } from "@/features/cart/cartSlice";
+import { cn } from "@/lib/utils";
 
 const ProductDetail = () => {
   const dispatch = useAppDispatch();
@@ -54,7 +56,7 @@ const ProductDetail = () => {
   }, [id, dispatch]);
 
   const addItemToCart = () => {
-    if (!selectedProduct) return;
+    if (!id || !selectedProduct) return;
     if (size === "") {
       setSizeError(true);
       return;
@@ -63,7 +65,7 @@ const ProductDetail = () => {
       navigate("/login");
       return;
     }
-
+    dispatch(addToCart({ id, size }));
     console.log("Add to cart:", selectedProduct._id, size);
   };
   const selectSize = (value: string) => {
@@ -86,6 +88,7 @@ const ProductDetail = () => {
   }
 
   const stock = selectedProduct.stock as Record<string, number>;
+  const isAllSoldOut = Object.values(stock).every((qty) => qty <= 0);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-5 lg:py-20">
@@ -107,12 +110,14 @@ const ProductDetail = () => {
               ))}
             </CarouselContent>
             {count > 1 && (
-              <div className="absolute bottom-4 left-1/2 opacity-0 group-hover:opacity-75 transition-opacity -translate-x-1/2 bg-black/25 text-white text-[11px] font-medium px-2 py-1 rounded-md backdrop-blur-sm">
-                {current} / {count}
-              </div>
+              <>
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-75 transition-opacity bg-black/25 text-white text-[11px] font-medium px-2 py-1 rounded-md backdrop-blur-sm flex items-center justify-center w-12">
+                  {current} / {count}
+                </div>
+                <CarouselPrevious className="left-0.5 opacity-0 group-hover:opacity-75 transition-opacity" />
+                <CarouselNext className="right-0.5 opacity-0 group-hover:opacity-75 transition-opacity" />
+              </>
             )}
-            <CarouselPrevious className="left-0.5 opacity-0 group-hover:opacity-75 transition-opacity" />
-            <CarouselNext className="right-0.5 opacity-0 group-hover:opacity-75 transition-opacity" />
           </Carousel>
           <Button
             variant="ghost"
@@ -164,7 +169,11 @@ const ProductDetail = () => {
                 >
                   <SelectValue placeholder="Select serving size" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent
+                  position="popper"
+                  sideOffset={-4}
+                  className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:duration-300"
+                >
                   {Object.keys(stock)
                     .sort((a, b) => {
                       const SIZE_ORDER = ["single", "double", "family"];
@@ -180,10 +189,12 @@ const ProductDetail = () => {
                         disabled={stock[item] <= 0}
                         className="cursor-pointer"
                       >
-                        <span className="flex justify-between w-full gap-10">
-                          <span>{item.toUpperCase()}</span>
+                        <span className="flex items-center w-full min-w-[140px]">
+                          <span className="w-16 inline-block shrink-0">
+                            {item.toUpperCase()}
+                          </span>
                           {stock[item] <= 0 && (
-                            <span className="text-red-500 text-xs font-medium">
+                            <span className="text-red-500 text-[10px] font-bold border border-red-200 px-1.5 py-0.5 bg-red-50 leading-none ml-auto">
                               SOLD OUT
                             </span>
                           )}
@@ -200,7 +211,7 @@ const ProductDetail = () => {
               )}
               {sizeError && (
                 <p className="text-xs text-red-500 font-medium">
-                  Please select a size to continue
+                  Please select a serving size to continue
                 </p>
               )}
             </div>
@@ -208,10 +219,16 @@ const ProductDetail = () => {
 
           <Button
             size="lg"
-            className="w-full mt-6 h-14 text-lg cursor-pointer font-bold bg-zinc-900 text-white transition-all duration-500 ease-in-out hover:bg-primary"
+            disabled={isAllSoldOut}
+            className={cn(
+              "w-full mt-6 h-14 text-lg cursor-pointer font-bold transition-all duration-500 ease-in-out",
+              isAllSoldOut
+                ? "bg-zinc-200 text-zinc-400 cursor-not-allowed"
+                : "bg-zinc-900 text-white hover:bg-primary",
+            )}
             onClick={addItemToCart}
           >
-            ADD TO CART
+            {isAllSoldOut ? "OUT OF STOCK" : "ADD TO CART"}
           </Button>
         </div>
       </div>

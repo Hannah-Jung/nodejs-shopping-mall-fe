@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import type { Product } from "@/features/product/productSlice";
 import { SquarePen, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,12 +34,12 @@ const ProductTable = ({
   return (
     <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
       <table className="w-full text-sm text-left">
-        <thead className="hidden sm:table-header-group bg-zinc-50 border-b border-zinc-200 text-zinc-600 font-medium">
+        <thead className="hidden sm:table-header-group bg-zinc-50 border-b border-zinc-200 text-zinc-600 font-medium text-center">
           <tr>
             {header.map((h) => (
               <th
                 key={h}
-                className="px-4 py-3 text-xs uppercase tracking-wider sm:text-center"
+                className="px-4 py-3 text-xs uppercase tracking-wider"
               >
                 {h}
               </th>
@@ -53,77 +52,123 @@ const ProductTable = ({
             data.map((product, index) => (
               <tr
                 key={product._id}
-                className="block sm:table-row border-b border-zinc-100 last:border-none hover:bg-zinc-50 transition-colors"
+                className={cn(
+                  "block sm:table-row border-b border-zinc-100 last:border-none transition-all duration-300",
+                  product.status === "inactive"
+                    ? "bg-zinc-50/50 opacity-80"
+                    : "bg-white hover:bg-zinc-50",
+                )}
               >
-                <td className="block sm:table-cell p-2 sm:py-4 before:content-['#'] before:font-bold before:mr-2 sm:before:content-none sm:text-center text-zinc-500">
+                <div className="sm:hidden flex justify-between items-center bg-zinc-50 px-4 py-2 border-b border-zinc-100">
+                  <span className="font-mono text-[10px] text-zinc-400">
+                    #{index + 1 + (currentPage - 1) * 5}
+                  </span>
+                  <span className="font-mono text-[10px] text-zinc-500 font-bold">
+                    {product.sku}
+                  </span>
+                </div>
+
+                <td className="hidden sm:table-cell p-2 sm:py-4 text-zinc-500 text-center font-mono text-xs border-r border-zinc-50/50">
                   {index + 1 + (currentPage - 1) * 5}
                 </td>
 
-                <td className="block sm:table-cell p-2 sm:py-4 sm:before:content-none sm:text-center">
-                  <span className="sm:hidden font-bold mr-2 text-zinc-500">
-                    SKU:
-                  </span>
-                  <span className="text-xs">{product.sku}</span>
+                <td className="hidden sm:table-cell p-2 sm:py-4 text-center font-mono text-xs border-r border-zinc-50/50">
+                  {product.sku}
                 </td>
 
-                <td className="block sm:table-cell p-2 sm:py-4 sm:before:content-none sm:text-center">
-                  <div className="flex items-center">
-                    <span className="sm:hidden font-bold mr-2 text-zinc-500">
-                      Image:
-                    </span>
-                    <img
-                      src={product.image[0]}
-                      alt={product.name}
-                      className="w-20 h-20 object-cover border border-zinc-200"
-                    />
-                  </div>
-                </td>
-                <td className="block sm:table-cell p-2 sm:py-4 sm:text-left font-medium text-zinc-900 sm:before:content-none">
-                  <div className="flex items-center sm:block">
-                    {" "}
-                    <span className="sm:hidden font-bold mr-2 text-zinc-500 shrink-0">
-                      Name:
-                    </span>
-                    <div
-                      className="line-clamp-2 sm:line-clamp-3 break-words max-w-[200px] sm:max-w-[250px]"
-                      title={product.name}
-                    >
-                      {product.name}
+                <td className="block sm:table-cell p-4 sm:p-2 sm:py-4">
+                  <div className="flex gap-4 sm:items-center sm:justify-center">
+                    <div className="relative shrink-0">
+                      <img
+                        src={product.image[0]}
+                        alt={product.name}
+                        className={cn(
+                          "w-24 h-28 sm:w-16 sm:h-20 object-cover rounded-lg border border-zinc-200 shadow-sm transition-all",
+                          product.status === "inactive" &&
+                            "grayscale opacity-60",
+                        )}
+                      />
+                      <div className="absolute -top-2 -left-2 sm:hidden">
+                        <span
+                          className={cn(
+                            "px-2 py-0.5 rounded-md text-[9px] font-black uppercase shadow-sm border",
+                            product.status === "active"
+                              ? "bg-green-500 text-white"
+                              : "bg-red-500 text-white",
+                          )}
+                        >
+                          {product.status}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col justify-center gap-1 flex-1 sm:hidden">
+                      <div className="font-bold text-zinc-900 leading-tight line-clamp-2 text-base">
+                        {product.name}
+                      </div>
+                      <div className="text-lg font-black text-zinc-900">
+                        ${product.price.toLocaleString()}
+                      </div>
                     </div>
                   </div>
                 </td>
 
-                <td className="block sm:table-cell p-2 sm:py-4 sm:text-right sm:before:content-none">
-                  <span className="sm:hidden font-bold mr-2 text-zinc-500">
-                    Price:
-                  </span>
+                <td className="hidden sm:table-cell p-4 sm:py-4 font-medium text-zinc-900 max-w-[250px]">
+                  <div
+                    className="line-clamp-2 break-words"
+                    title={product.name}
+                  >
+                    {product.name}
+                  </div>
+                </td>
+
+                <td className="hidden sm:table-cell p-2 sm:py-4 text-center text-zinc-900 font-semibold">
                   ${product.price.toLocaleString()}
                 </td>
 
-                <td>
-                  <div className="space-y-2 p-4">
+                <td className="block sm:table-cell px-4 pb-4 sm:py-4">
+                  <div className="grid grid-cols-3 gap-3 bg-zinc-50/50 p-3 rounded-xl sm:bg-transparent sm:p-0 sm:flex sm:flex-col sm:items-center sm:max-w-[120px] sm:mx-auto">
                     {Object.entries(product.stock)
-                      .sort(([a], [b]) => {
-                        const indexA = SIZE_ORDER.indexOf(a.toLowerCase());
-                        const indexB = SIZE_ORDER.indexOf(b.toLowerCase());
-                        return indexA - indexB;
-                      })
+                      .sort(
+                        ([a], [b]) =>
+                          SIZE_ORDER.indexOf(a.toLowerCase()) -
+                          SIZE_ORDER.indexOf(b.toLowerCase()),
+                      )
                       .map(([size, qty]) => (
-                        <div key={size} className="w-20">
-                          <div className="flex justify-between text-[11px] mb-0.5">
-                            <span className="font-semibold uppercase">
+                        <div
+                          key={size}
+                          className="flex flex-col gap-1 sm:w-full"
+                        >
+                          <div className="flex justify-between text-[10px]">
+                            <span
+                              className={cn(
+                                "font-bold uppercase",
+                                qty <= 0 ? "text-red-600" : "text-zinc-400",
+                              )}
+                            >
                               {size}
                             </span>
-                            <span className="font-mono">{qty}</span>
+                            <span
+                              className={cn(
+                                "font-mono font-bold",
+                                qty <= 0 ? "text-red-600" : "text-zinc-700",
+                              )}
+                            >
+                              {qty}
+                            </span>
                           </div>
-                          <div className="h-1.5 w-full bg-zinc-100 rounded-md overflow-hidden">
+                          <div className="h-1 w-full bg-zinc-200 rounded-full overflow-hidden">
                             <div
                               className={cn(
-                                "h-full rounded-md",
-                                qty < 20 ? "bg-orange-400" : "bg-emerald-500",
+                                "h-full transition-all duration-500",
+                                qty <= 0
+                                  ? "bg-zinc-300"
+                                  : qty < 20
+                                    ? "bg-red-500"
+                                    : "bg-emerald-500",
                               )}
                               style={{
-                                width: `${Math.min((qty / 50) * 100, 100)}%`,
+                                width: `${Math.min((qty / 100) * 100, 100)}%`,
                               }}
                             />
                           </div>
@@ -132,13 +177,10 @@ const ProductTable = ({
                   </div>
                 </td>
 
-                <td className="block sm:table-cell p-2 sm:py-4 sm:before:content-none sm:text-center">
-                  <span className="sm:hidden font-bold mr-2 text-zinc-500">
-                    Status:
-                  </span>
+                <td className="hidden sm:table-cell p-2 sm:py-4 text-center">
                   <span
                     className={cn(
-                      "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ",
+                      "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase",
                       product.status === "active"
                         ? "bg-green-100 text-green-700"
                         : "bg-red-100 text-red-700",
@@ -148,73 +190,43 @@ const ProductTable = ({
                   </span>
                 </td>
 
-                <td className="block sm:table-cell p-2 sm:py-4">
-                  <div className="flex sm:justify-start">
+                <td className="block sm:table-cell p-4 pt-0 sm:py-4">
+                  <div className="flex gap-2 justify-end sm:justify-center border-t sm:border-0 pt-3 sm:pt-0">
                     <Button
                       size="sm"
-                      variant="ghost"
-                      className="h-8 w-8 p-0 sm:w-auto sm:px-2 sm:h-9 hover:text-primary hover:bg-zinc-100 transition-all"
+                      variant="outline"
+                      className="h-10 flex-1 sm:flex-none sm:h-9 sm:w-9 p-0 hover:text-primary transition-all cursor-pointer bg-white"
                       onClick={() => openEditForm(product)}
                     >
-                      <SquarePen className="size-4" />
+                      <SquarePen className="size-4 mr-2 sm:mr-0" />
+                      <span className="sm:hidden text-xs font-bold">EDIT</span>
                     </Button>
+
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
                           size="sm"
-                          variant="ghost"
-                          className="h-8 w-8 p-0 sm:w-auto sm:px-2 sm:h-9 hover:text-red-500 hover:bg-zinc-100 transition-all cursor-pointer"
+                          variant="outline"
+                          className="h-10 flex-1 sm:flex-none sm:h-9 sm:w-9 p-0 hover:text-red-500 transition-all cursor-pointer bg-white"
                         >
-                          <Trash2 className="size-4" />
+                          <Trash2 className="size-4 mr-2 sm:mr-0" />
+                          <span className="sm:hidden text-xs font-bold">
+                            DELETE
+                          </span>
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle className="mb-6">
-                            Are you sure you want to delete this?
-                          </AlertDialogTitle>
-                          <div className="flex justify-center w-full mb-6">
-                            <div className="w-24 h-24 rounded-lg overflow-hidden border border-zinc-200 bg-zinc-50 shadow-sm">
-                              <img
-                                src={product.image[0]}
-                                alt={product.name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          </div>
-                          <AlertDialogDescription className="mb-2">
-                            <span className="px-1 font-bold text-red-600">
-                              {product.name}
-                            </span>
-                            will be permanently removed from your product list.
-                            <br />
-                            This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel className="cursor-pointer">
-                            Cancel
-                          </AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => deleteItem(product._id)}
-                            className="bg-red-500 hover:bg-red-600 text-white cursor-pointer"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
                     </AlertDialog>
                   </div>
                 </td>
               </tr>
             ))
           ) : (
-            <tr className="block sm:table-row">
+            <tr>
               <td
                 colSpan={header.length}
-                className="block sm:table-cell py-20 text-center text-zinc-500"
+                className="py-20 text-center text-zinc-500"
               >
-                No results for "{}"
+                No results found.
               </td>
             </tr>
           )}

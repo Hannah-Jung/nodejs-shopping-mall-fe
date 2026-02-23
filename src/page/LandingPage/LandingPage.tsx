@@ -87,7 +87,7 @@ const LandingPage = () => {
                   breakClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
                   breakLinkClassName="page-link px-4 py-2 block"
                   activeLinkClassName="!bg-orange-500 !border-orange-500 !text-white"
-                  activeClassName="active bg-orange-500 border-orange-500 text-white" // 랜딩페이지 컬러에 맞게 조정 가능
+                  activeClassName="active bg-orange-500 border-orange-500 text-white"
                 />
               </div>
             )}

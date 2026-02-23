@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { AppDispatch } from "../store";
-// import api from "../../utils/api";
-// import { showToastMessage } from "../common/uiSlice";
+import { showToastMessage } from "../common/uiSlice";
+import api from "@/utils/api";
+import { act } from "react";
 
 export interface CartItem {
   _id?: string;
@@ -29,13 +30,32 @@ const initialState: CartState = {
 };
 
 export const addToCart = createAsyncThunk<
-  unknown,
+  any,
   { id: string; size: string },
   { rejectValue: string; dispatch: AppDispatch }
->("cart/addToCart", async (_arg, { rejectWithValue, dispatch }) => {
-  void dispatch;
-  void rejectWithValue;
-  return undefined;
+>("cart/addToCart", async ({ id, size }, { rejectWithValue, dispatch }) => {
+  try {
+    const response = await api.post("/cart", { productId: id, size, qty: 1 });
+
+    if (response.status !== 200) throw new Error(response.data.error);
+
+    dispatch(
+      showToastMessage({
+        message: "Added an item to cart successfully!",
+        status: "success",
+      }),
+    );
+
+    return response.data.cartItemQty;
+  } catch (error: any) {
+    dispatch(
+      showToastMessage({
+        message: error.error || "Failed to add an item to cart",
+        status: "error",
+      }),
+    );
+    return rejectWithValue(error.error);
+  }
 });
 
 export const getCartList = createAsyncThunk<
@@ -68,25 +88,53 @@ export const updateQty = createAsyncThunk<
 });
 
 export const getCartQty = createAsyncThunk<
-  unknown,
+  any,
   void,
   { rejectValue: string; dispatch: AppDispatch }
->("cart/getCartQty", async (_, { rejectWithValue, dispatch }) => {
-  void dispatch;
-  void rejectWithValue;
-  return undefined;
+>("cart/getCartQty", async (_, { rejectWithValue }) => {
+  try {
+    const response = await api.get("/cart/qty");
+    if (response.status !== 200) throw new Error(response.data.error);
+    return response.data.qty;
+  } catch (error: any) {
+    const errMsg = error.response?.data?.error || error.message;
+    return rejectWithValue(errMsg);
+  }
 });
 
 const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
+    logoutCart(state) {
+      state.cartItemCount = 0;
+      state.cartList = [];
+      state.totalPrice = 0;
+      state.error = "";
+      state.loading = false;
+    },
     initialCart(state) {
       state.cartItemCount = 0;
     },
   },
-  extraReducers: () => {},
+  extraReducers: (builder) => {
+    builder.addCase(addToCart.pending, (state, action) => {
+      state.loading = true;
+    });
+    builder.addCase(addToCart.fulfilled, (state, action) => {
+      state.loading = false;
+      state.error = "";
+      state.cartItemCount = action.payload;
+    });
+    builder.addCase(addToCart.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload || "";
+    });
+    builder.addCase(getCartQty.fulfilled, (state, action) => {
+      state.cartItemCount = action.payload;
+    });
+  },
 });
 
 export default cartSlice.reducer;
-export const { initialCart } = cartSlice.actions;
+export const { initialCart, logoutCart } = cartSlice.actions;

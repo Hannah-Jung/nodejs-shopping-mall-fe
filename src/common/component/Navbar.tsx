@@ -20,6 +20,7 @@ import {
 import { logoutThunk } from "../../features/user/userSlice";
 import { useAppDispatch, useAppSelector } from "../../features/hooks";
 import type { User } from "@/types/user";
+import { logoutCart } from "@/features/cart/cartSlice";
 
 interface NavbarProps {
   user: User | null;
@@ -54,6 +55,7 @@ const Navbar = ({ user }: NavbarProps) => {
 
   const handleLogout = () => {
     dispatch(logoutThunk());
+    dispatch(logoutCart());
     setProfileOpen(false);
     navigate("/login");
   };

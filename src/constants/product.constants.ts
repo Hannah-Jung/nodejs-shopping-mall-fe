@@ -16,11 +16,11 @@ export const CATEGORY = [
   "Main Meals",
   "Quick Bites",
   "Healthy & Vegan",
-  "Sides & Bakery",
   "Family & Party",
+  "Sides & Bakery",
 ];
 export const STATUS = ["Active", "Inactive"];
-export const SIZE = ["Single", "Double", "Family"];
+export const SIZE = ["SINGLE", "DOUBLE", "FAMILY"];
 export const TOGGLE_ITEM_DIALOG = "TOGGLE_ITEM_DIALOG";
 export const SEARCH_PRODUCT_REQUEST = " SEARCH_PRODUCT_REQUEST";
 export const SEARCH_PRODUCT_SUCCESS = " SEARCH_PRODUCT_SUCCESS";

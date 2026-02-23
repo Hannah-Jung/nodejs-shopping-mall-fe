@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import CloudinaryUploadWidget from "../../../utils/CloudinaryUploadWidget";
 import { CATEGORY, STATUS, SIZE } from "../../../constants/product.constants";
@@ -10,7 +10,17 @@ import {
 } from "../../../features/product/productSlice";
 import { useAppDispatch, useAppSelector } from "../../../features/hooks";
 import type { Product } from "@/features/product/productSlice";
-import { ArrowLeft, ArrowRight, Plus, Trash2 } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  ImageIcon,
+  Package,
+  Plus,
+  Settings,
+  Trash2,
+} from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -20,6 +30,8 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 type FormControlElement =
   | HTMLInputElement
@@ -69,6 +81,22 @@ const NewItemDialog = ({
   const [stock, setStock] = useState<[string, number][]>([]);
   const [stockError, setStockError] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const stockEndRef = useRef<HTMLDivElement>(null);
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (descriptionRef.current) {
+      descriptionRef.current.style.height = "auto";
+      descriptionRef.current.style.height = `${descriptionRef.current.scrollHeight}px`;
+    }
+  }, [formData.description]);
+
+  useEffect(() => {
+    stockEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  }, [stock.length]);
 
   useEffect(() => {
     if (success) {
@@ -105,6 +133,8 @@ const NewItemDialog = ({
         });
         setStock([]);
       }
+      setErrors({});
+      setStockError(false);
       dispatch(clearError());
     }
   }, [showDialog, mode, selectedProduct]);
@@ -146,22 +176,22 @@ const NewItemDialog = ({
   const validate = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name?.trim()) newErrors.name = "Product name is required.";
+    if (!formData.name?.trim()) newErrors.name = "Product name is required";
     if (!formData.description?.trim())
-      newErrors.description = "Description is required.";
+      newErrors.description = "Description is required";
     if (!formData.price || formData.price <= 0)
-      newErrors.price = "Price must be greater than 0.";
+      newErrors.price = "Price must be greater than 0";
     if (!formData.image || formData.image.length === 0)
-      newErrors.image = "At least one image is required.";
+      newErrors.image = "At least one image is required";
     if (!formData.category || formData.category.length === 0)
-      newErrors.category = "Please select at least one category.";
+      newErrors.category = "Please select at least one category";
 
     if (stock.length === 0) {
-      newErrors.stock = "Please add at least one stock entry.";
+      newErrors.stock = "Please add at least one stock entry";
     } else if (stock.some((item) => !item[0])) {
-      newErrors.stock = "Size selection required for all entries.";
-    } else if (stock.some((item) => item[1] <= 0)) {
-      newErrors.stock = "Stock quantity must be greater than 0.";
+      newErrors.stock = "Size selection required for all entries";
+    } else if (stock.some((item) => item[1] < 0)) {
+      newErrors.stock = "Stock quantity cannot be negative";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -205,14 +235,16 @@ const NewItemDialog = ({
       return next;
     });
   };
-
   const handleStockChange = (value: string, index: number) => {
     const numValue = Number(value);
+
     if (numValue < 0) return;
+
     if (errors.stock) setErrors((prev) => ({ ...prev, stock: "" }));
+
     setStock((prev) => {
       const next = [...prev];
-      const newValue = value === "" ? "" : Number(value);
+      const newValue = value === "" ? ("" as unknown as number) : Number(value);
       next[index] = [next[index][0], newValue as number];
       return next;
     });
@@ -234,6 +266,11 @@ const NewItemDialog = ({
   };
 
   const uploadImage = (url: string) => {
+    if (formData.image && formData.image.length >= 5) {
+      setErrors((prev) => ({ ...prev, image: "Maximum 5 images allowed." }));
+      return;
+    }
+
     setErrors((prev) => ({ ...prev, image: "" }));
     setFormData((prev) => ({
       ...prev,
@@ -267,353 +304,383 @@ const NewItemDialog = ({
   if (!showDialog) return null;
 
   const inputStyles =
-    "w-full rounded-md border border-input bg-muted/30 px-3 py-2 outline-none transition-colors duration-200 focus:border-primary/75";
+    "w-full rounded-md border border-input bg-background px-3 py-2 outline-none transition-all duration-200 focus:ring-2 focus:ring-primary/20 focus:border-primary";
 
   return (
     <>
       <div
-        className="fixed inset-0 z-40 bg-black/50 cursor-pointer animate-in fade-in duration-300"
-        aria-hidden
+        className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
         onClick={handleClose}
       />
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="new-item-dialog-title"
-      >
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
         <div
-          className="page-transition form-container max-h-[90vh] w-full max-w-2xl overflow-auto rounded-lg bg-white p-6 shadow-xl"
+          className="page-transition w-full max-w-2xl max-h-[90vh] overflow-auto rounded-xl bg-white shadow-2xl flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="mb-4 flex justify-between items-center">
-            <h2 id="new-item-dialog-title" className="text-lg font-semibold">
-              {mode === "new" ? "Create New Product" : "Edit Product"}
-            </h2>
+          <div className="sticky top-0 z-10 bg-white px-8 py-6 border-b flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight text-zinc-900">
+                {mode === "new" ? "Create New Product" : "Edit Product"}
+              </h2>
+            </div>
             <button
-              type="button"
               onClick={handleClose}
-              className="text-2xl leading-none p-1 cursor-pointer"
-              aria-label="Close"
+              className="text-zinc-400 hover:text-zinc-600 transition-colors text-3xl cursor-pointer"
             >
               &times;
             </button>
           </div>
 
-          {error && (
-            <div className="error-message mb-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-red-700">
-              {error}
-            </div>
-          )}
-
-          <form className="form-container" onSubmit={handleSubmit} noValidate>
-            <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div>
-                <label htmlFor="sku" className="block font-medium mb-1">
-                  SKU (Auto-generated)
-                </label>
-                <input
-                  id="sku"
-                  name="sku"
-                  type="text"
-                  placeholder="Generating SKU..."
-                  required
-                  value={formData.sku ?? ""}
-                  readOnly
-                  className={`${inputStyles} bg-gray-100 cursor-not-allowed text-gray-500`}
-                />
-              </div>
-              <div>
-                <label htmlFor="name" className="block font-medium mb-1">
-                  PRODUCT NAME
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  placeholder="Product Name"
-                  required
-                  value={formData.name ?? ""}
-                  onChange={handleChange}
-                  className={cn(inputStyles, errors.name && "border-red-500")}
-                />
-                <ErrorMsg message={errors.name} />
-              </div>
-            </div>
-
-            <div className="mb-3">
-              <label htmlFor="description" className="block font-medium mb-1">
-                PRODUCT DESCRIPTION
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                placeholder="Product Description"
-                rows={3}
-                required
-                value={formData.description ?? ""}
-                onChange={handleChange}
-                className={inputStyles}
-              />
-              <ErrorMsg message={errors.description} />
-            </div>
-
-            <div className="mb-3">
-              <label className="mr-1 block font-medium mb-1">STOCK</label>
-              {stockError && (
-                <span className="error-message text-red-600">Add stock</span>
+          <form
+            onSubmit={handleSubmit}
+            noValidate
+            className="flex-1 flex flex-col"
+          >
+            <div className="p-7 space-y-4 flex-1">
+              {error && (
+                <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+                  {error}
+                </div>
               )}
-              <Button
-                type="button"
-                size="sm"
-                onClick={addStock}
-                className="cursor-pointer"
-              >
-                <Plus />
-                Add
-              </Button>
-              <ErrorMsg message={errors.stock} />
-              <div className="mt-2 space-y-2">
-                {stock.map((item, index) => (
-                  <div
-                    key={index}
-                    className="grid grid-cols-[1fr_1fr_auto] gap-2 items-center sm:grid-cols-12"
-                  >
-                    <div className="sm:col-span-4">
-                      <Select
-                        required
-                        value={item[0] ?? ""}
-                        onValueChange={(value) =>
-                          handleSizeChange(value, index)
-                        }
-                      >
-                        <SelectTrigger
-                          className={cn(
-                            inputStyles,
-                            "bg-[#fbfbfb] text-[#737373] border-input focus:ring-primary/75",
-                          )}
-                        >
-                          <SelectValue placeholder="Select size" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-[#fbfbfb] border-zinc-200 shadow-lg">
-                          {SIZE.map((s, i) => (
-                            <SelectItem
-                              key={i}
-                              value={s}
-                              disabled={stock.some(([size]) => size === s)}
-                            >
-                              {s}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="sm:col-span-6">
-                      <input
-                        type="number"
-                        placeholder="Quantity"
-                        required
-                        value={item[1] === 0 ? "" : item[1]}
-                        onChange={(e) =>
-                          handleStockChange(e.target.value, index)
-                        }
-                        onFocus={(e) => {
-                          if (e.target.value === "0") {
-                            handleStockChange("", index);
-                          }
-                        }}
-                        onBlur={(e) => {
-                          if (e.target.value === "") {
-                            handleStockChange("0", index);
-                          }
-                        }}
-                        className={inputStyles}
-                      />
-                    </div>
-                    <div className="sm:col-span-2">
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        className="cursor-pointer"
-                        size="sm"
-                        onClick={() => deleteStock(index)}
-                      >
-                        <Trash2 />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
 
-            <div className="mb-3">
-              <label className="block font-medium mb-1">IMAGE</label>
-              <div className="flex flex-col items-start">
-                <CloudinaryUploadWidget uploadImage={uploadImage} />
-                <ErrorMsg message={errors.image} />
-              </div>
-              <div className="flex flex-wrap gap-3 mt-3">
-                {formData.image?.map((imgUrl, index) => (
-                  <div
-                    key={index}
-                    className="relative group w-32 h-40 border rounded-md overflow-hidden bg-gray-50 flex flex-col"
-                  >
-                    <div className="relative flex-1">
-                      <img
-                        src={imgUrl}
-                        alt={`product-${index}`}
-                        className="w-full h-full object-cover"
-                      />
-                      {index === 0 && (
-                        <span className="absolute top-1 left-1 bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
-                          MAIN
-                        </span>
+              <section className="space-y-4">
+                <div className="flex items-center gap-2 text-primary font-bold">
+                  <Package className="size-5" />
+                  <span className="tracking-tight">BASIC INFORMATION</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="md:col-span-1">
+                    <label className="text-sm font-semibold mb-1.5 block text-zinc-700">
+                      SKU (AUTO-GENERATED)
+                    </label>
+                    <input
+                      value={formData.sku}
+                      readOnly
+                      className={cn(
+                        inputStyles,
+                        "bg-zinc-100 cursor-not-allowed text-zinc-500 font-mono",
                       )}
-                    </div>
-
-                    <div className="flex justify-between items-center p-1 bg-white border-t">
-                      <div className="flex gap-1">
-                        <button
-                          type="button"
-                          disabled={index === 0}
-                          onClick={() => moveImage(index, "left")}
-                          className="p-1 hover:bg-gray-100 rounded disabled:opacity-30"
-                        >
-                          <ArrowLeft size={14} />
-                        </button>
-                        <button
-                          type="button"
-                          disabled={index === (formData.image?.length ?? 0) - 1}
-                          onClick={() => moveImage(index, "right")}
-                          className="p-1 hover:bg-gray-100 rounded disabled:opacity-30"
-                        >
-                          <ArrowRight size={14} />
-                        </button>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => deleteImage(index)}
-                        className="p-1 text-red-500 hover:bg-red-50 rounded"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
+                    />
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div className="md:col-span-2">
+                    <label className="text-sm font-semibold mb-1.5 block text-zinc-700">
+                      PRODUCT NAME
+                    </label>
+                    <input
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      className={cn(
+                        inputStyles,
+                        errors.name && "border-red-500",
+                      )}
+                      placeholder="e.g. Organic Bibimbap Meal Kit"
+                    />
+                    <ErrorMsg message={errors.name} />
+                  </div>
+                </div>
 
-            <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div>
-                <label htmlFor="price" className="block font-medium mb-1">
-                  PRICE
-                </label>
-                <input
-                  id="price"
-                  name="price"
-                  type="number"
-                  placeholder="0"
-                  required
-                  value={formData.price === 0 ? "" : formData.price}
-                  onChange={handleChange}
-                  onFocus={(e) => {
-                    if (formData.price === 0) {
-                      setFormData((prev) => ({ ...prev, price: "" as any }));
-                    }
-                  }}
-                  onBlur={(e) => {
-                    if (e.target.value === "") {
-                      setFormData((prev) => ({ ...prev, price: 0 }));
-                    }
-                  }}
-                  className={inputStyles}
-                />
-                <ErrorMsg message={errors.price} />
-              </div>
-              <div>
-                <label htmlFor="category" className="block font-medium mb-1">
-                  CATEGORY
-                </label>
-                <div className="mb-3">
-                  <div className="grid grid-cols-2 gap-4 p-4 rounded-md border border-input bg-muted/30">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                  <div>
+                    <label className="text-sm font-semibold mb-1.5 block text-zinc-700">
+                      PRICE
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-sm font-medium">
+                        $
+                      </span>
+                      <input
+                        name="price"
+                        type="number"
+                        value={formData.price === 0 ? "" : formData.price}
+                        onChange={handleChange}
+                        className={cn(
+                          inputStyles,
+                          "h-full pl-7",
+                          errors.price && "border-red-500",
+                        )}
+                        placeholder="0.00"
+                      />
+                    </div>
+                    <ErrorMsg message={errors.price} />
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold mb-1.5 block text-zinc-700">
+                      STATUS
+                    </label>
+                    <Select
+                      value={formData.status}
+                      onValueChange={(v) =>
+                        setFormData((p) => ({ ...p, status: v }))
+                      }
+                    >
+                      <SelectTrigger
+                        className={cn(inputStyles, "cursor-pointer")}
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent position="popper" sideOffset={4}>
+                        {STATUS.map((s) => (
+                          <SelectItem key={s} value={s.toLowerCase()}>
+                            {s}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold mb-1.5 block text-zinc-700">
+                    CATEGORY
+                  </label>
+                  <div className="flex flex-wrap gap-3 p-4 rounded-xl border bg-zinc-50/50">
                     {CATEGORY.map((item) => {
-                      const value = item.toLowerCase();
-                      const isChecked = formData.category?.includes(value);
-
+                      const val = item.toLowerCase();
+                      const checked = formData.category?.includes(val);
                       return (
                         <div
-                          key={value}
-                          className="flex items-center space-x-2"
+                          key={val}
+                          onClick={() =>
+                            onHandleCategory({ target: { value: val } } as any)
+                          }
+                          className={cn(
+                            "px-4 py-2 rounded-md border text-sm font-medium transition-all cursor-pointer select-none",
+                            checked
+                              ? "bg-primary border-primary text-white shadow-sm"
+                              : "bg-white border-zinc-200 text-zinc-600 hover:border-primary/50 hover:bg-zinc-50",
+                          )}
                         >
-                          <Checkbox
-                            id={`category-${value}`}
-                            checked={isChecked}
-                            onCheckedChange={(checked) => {
-                              if (errors.category)
-                                setErrors((prev) => ({
-                                  ...prev,
-                                  category: "",
-                                }));
-                              if (checked) {
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  category: [...(prev.category ?? []), value],
-                                }));
-                              } else {
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  category:
-                                    prev.category?.filter((c) => c !== value) ??
-                                    [],
-                                }));
-                              }
-                            }}
-                            className="border-zinc-500 data-[state=checked]:bg-primary data-[state=checked]:text-white"
-                          />
-                          <label
-                            htmlFor={`category-${value}`}
-                            className="text-sm font-medium leading-none cursor-pointer peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                          >
-                            {item}
-                          </label>
+                          {item}
                         </div>
                       );
                     })}
                   </div>
                   <ErrorMsg message={errors.category} />
                 </div>
-              </div>
-              <div>
-                <label htmlFor="status" className="block font-medium mb-1">
-                  STATUS
-                </label>
-                <Select
-                  required
-                  value={formData.status}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      status: value,
-                    }))
-                  }
-                >
-                  <SelectTrigger className={inputStyles}>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
 
-                  <SelectContent className="bg-[#fbfbfb] border-zinc-200 shadow-lg">
-                    {STATUS.map((item, idx) => (
-                      <SelectItem key={idx} value={item.toLowerCase()}>
-                        {item}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                <div>
+                  <label className="text-sm font-semibold mb-1.5 block text-zinc-700">
+                    PRODUCT DESCRIPTION
+                  </label>
+                  <textarea
+                    ref={descriptionRef}
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    rows={3}
+                    className={cn(
+                      inputStyles,
+                      "resize-none overflow-hidden transition-[height] duration-200",
+                    )}
+                    placeholder="Write a detailed product description..."
+                  />
+                  <ErrorMsg message={errors.description} />
+                </div>
+              </section>
+
+              <Separator className="my-2" />
+
+              <section className="space-y-4 pt-2">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-2 text-primary font-bold shrink-0">
+                    <ImageIcon className="size-5" />
+                    <span>PRODUCT IMAGE</span>
+                  </div>
+                  <div className="flex justify-end">
+                    {(formData.image?.length ?? 0) < 5 ? (
+                      <CloudinaryUploadWidget
+                        uploadImage={uploadImage}
+                        imageCount={formData.image?.length || 0}
+                      />
+                    ) : (
+                      <span className="text-[10px] sm:text-[11px] text-zinc-500 font-bold bg-zinc-100 px-2 py-1.5 rounded tracking-tight text-right shadow-sm">
+                        <span className="inline sm:hidden">MAX 5 IMAGES</span>
+                        <span className="hidden sm:inline">
+                          MAXIMUM OF 5 IMAGES REACHED
+                        </span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <Card className="border-dashed bg-zinc-50/30 mb-2">
+                  <CardContent className="p-4">
+                    <ErrorMsg message={errors.image} />
+
+                    <div className="flex flex-wrap justify-center sm:justify-start gap-4 sm:gap-6">
+                      {formData.image?.length === 0 ? (
+                        <div className="w-full py-10 flex flex-col items-center justify-center text-zinc-400">
+                          <ImageIcon className="size-10 mb-2 opacity-20" />
+                          <p className="text-sm">No images uploaded yet</p>
+                        </div>
+                      ) : (
+                        formData.image?.map((imgUrl, idx) => (
+                          <div
+                            key={idx}
+                            className={cn(
+                              "relative group border rounded-lg overflow-hidden bg-white shadow-sm transition-transform",
+                              "w-64 h-72",
+                              "sm:w-32 sm:h-40",
+                            )}
+                          >
+                            <img
+                              src={imgUrl}
+                              className="w-full h-full object-cover"
+                            />
+                            {idx === 0 && (
+                              <span className="absolute top-2 left-2 bg-primary text-[10px] px-2 py-0.5 rounded-md font-bold text-white shadow-md">
+                                MAIN
+                              </span>
+                            )}
+                            <div className="absolute inset-x-0 bottom-0 bg-black/60 p-2 flex justify-between opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="flex gap-1.5">
+                                <button
+                                  type="button"
+                                  disabled={idx === 0}
+                                  onClick={() => moveImage(idx, "left")}
+                                  className="p-1 text-white disabled:opacity-30"
+                                >
+                                  <ArrowUp
+                                    size={18}
+                                    className="inline sm:hidden cursor-pointer"
+                                  />
+                                  <ArrowLeft
+                                    size={18}
+                                    className="hidden sm:inline cursor-pointer"
+                                  />
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={
+                                    idx === (formData.image?.length ?? 0) - 1
+                                  }
+                                  onClick={() => moveImage(idx, "right")}
+                                  className="p-1 text-white disabled:opacity-30"
+                                >
+                                  <ArrowDown
+                                    size={18}
+                                    className="inline sm:hidden cursor-pointer"
+                                  />
+                                  <ArrowRight
+                                    size={18}
+                                    className="hidden sm:inline cursor-pointer"
+                                  />
+                                </button>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => deleteImage(idx)}
+                                className="p-1 text-white/40 hover:text-red-400 cursor-pointer transition-colors"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+
+              <Separator />
+
+              <section className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-primary font-bold">
+                    <Settings className="size-5" />
+                    <span>STOCK MANAGEMENT</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addStock}
+                    className="h-8 gap-1 cursor-pointer"
+                  >
+                    <Plus className="size-4" /> ADD
+                  </Button>
+                </div>
+
+                <div className="space-y-3">
+                  {stock.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="grid grid-cols-12 gap-2 sm:gap-4 items-center animate-in slide-in-from-left-2 duration-300"
+                    >
+                      <div className="col-span-5 sm:col-span-4">
+                        <Select
+                          value={item[0]}
+                          onValueChange={(v) => handleSizeChange(v, idx)}
+                        >
+                          <SelectTrigger className="w-full bg-white px-2 sm:px-4 h-11 flex items-center justify-between border-input cursor-pointer">
+                            <SelectValue placeholder="SIZE" />
+                          </SelectTrigger>
+                          <SelectContent
+                            position="popper"
+                            sideOffset={-4}
+                            className="w-[var(--radix-select-trigger-width)] min-w-[var(--radix-select-trigger-width)]"
+                          >
+                            {SIZE.map((s) => (
+                              <SelectItem
+                                key={s}
+                                value={s}
+                                disabled={stock.some(([size]) => size === s)}
+                                className="cursor-pointer"
+                              >
+                                {s}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="col-span-5 sm:col-span-6 relative">
+                        <input
+                          type="number"
+                          placeholder="0"
+                          value={item[1]}
+                          onChange={(e) =>
+                            handleStockChange(e.target.value, idx)
+                          }
+                          className={cn(inputStyles, "h-full pr-8 sm:pr-10")}
+                        />
+                        <span className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-zinc-400 select-none">
+                          QTY
+                        </span>
+                      </div>
+                      <div className="col-span-2 flex justify-end">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteStock(idx)}
+                          className="text-zinc-400 hover:text-red-500 hover:bg-transparent transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="size-5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  <div ref={stockEndRef} className="h-1" />
+                  <ErrorMsg message={errors.stock} />
+                </div>
+              </section>
             </div>
-            <div className="flex justify-center">
-              <Button type="submit" className="cursor-pointer">
-                {mode === "new" ? "Submit" : "Edit"}
+            <div className="sticky bottom-0 z-10 bg-white border-t px-8 py-5 flex justify-end gap-3 mt-auto">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleClose}
+                className="px-8 text-zinc-500 hover:bg-zinc-100 cursor-pointer"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="px-6 font-bold text-md shadow-lg bg-black transition-all active:scale-95 cursor-pointer"
+              >
+                {mode === "new" ? "Create Product" : "Save Changes"}
               </Button>
             </div>
           </form>

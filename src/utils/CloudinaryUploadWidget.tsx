@@ -8,6 +8,7 @@ const CLOUDNAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME as string;
 const UPLOADPRESET = import.meta.env.VITE_CLOUDINARY_PRESET as string;
 interface CloudinaryUploadWidgetProps {
   uploadImage: (url: string) => void;
+  imageCount: number;
 }
 
 class CloudinaryUploadWidget extends Component<CloudinaryUploadWidgetProps> {
@@ -22,7 +23,9 @@ class CloudinaryUploadWidget extends Component<CloudinaryUploadWidgetProps> {
       {
         cloudName: CLOUDNAME,
         uploadPreset: UPLOADPRESET,
-      },
+        maxFiles: 5,
+        multiple: true,
+      } as any,
       (
         error: unknown,
         result?: { event?: string; info?: { secure_url?: string } },
@@ -41,15 +44,17 @@ class CloudinaryUploadWidget extends Component<CloudinaryUploadWidgetProps> {
   }
 
   render() {
+    const { imageCount } = this.props;
     return (
       <Button
         id="upload_widget"
         type="button"
+        variant="outline"
         size="sm"
-        className="cursor-pointer"
+        className="h-8 gap-1.5 cursor-pointer border-zinc-300 hover:bg-zinc-50"
       >
-        <Plus />
-        Upload Image
+        <Plus className="size-4" />
+        ADD ({imageCount}/5)
       </Button>
     );
   }
