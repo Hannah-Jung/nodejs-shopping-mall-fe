@@ -25,6 +25,7 @@ import {
 import { Flame, Heart } from "lucide-react";
 import { addToCart } from "@/features/cart/cartSlice";
 import { cn } from "@/lib/utils";
+import AddToCartModal from "./component/AddToCartModal";
 
 const ProductDetail = () => {
   const dispatch = useAppDispatch();
@@ -37,6 +38,7 @@ const ProductDetail = () => {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [count, setCount] = useState(0);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     if (!api) return;
@@ -55,7 +57,7 @@ const ProductDetail = () => {
     }
   }, [id, dispatch]);
 
-  const addItemToCart = () => {
+  const addItemToCart = async () => {
     if (!id || !selectedProduct) return;
     if (size === "") {
       setSizeError(true);
@@ -65,9 +67,14 @@ const ProductDetail = () => {
       navigate("/login");
       return;
     }
-    dispatch(addToCart({ id, size }));
-    console.log("Add to cart:", selectedProduct._id, size);
+
+    const response = await dispatch(addToCart({ id, size }));
+
+    if (response.meta.requestStatus === "fulfilled") {
+      setShowSuccessModal(true);
+    }
   };
+
   const selectSize = (value: string) => {
     setSize(value);
     setSizeError(false);
@@ -75,17 +82,25 @@ const ProductDetail = () => {
 
   if (loading || !selectedProduct) {
     return (
-      <ColorRing
-        visible={true}
-        height="80"
-        width="80"
-        ariaLabel="blocks-loading"
-        wrapperStyle={{}}
-        wrapperClass="blocks-wrapper"
-        colors={["#e15b64", "#f47e60", "#f8b26a", "#abbd81", "#849b87"]}
-      />
+      <div className="flex justify-center items-center h-screen">
+        <ColorRing
+          visible={true}
+          height="80"
+          width="80"
+          colors={["#e15b64", "#f47e60", "#f8b26a", "#abbd81", "#849b87"]}
+        />
+      </div>
     );
   }
+
+  const prices = selectedProduct.price as unknown as Record<string, number>;
+  const priceValues = Object.values(prices).filter(
+    (v) => typeof v === "number" && v > 0,
+  );
+
+  const minPrice = priceValues.length > 0 ? Math.min(...priceValues) : 0;
+
+  const currentPrice = size ? prices[size.toLowerCase()] : minPrice;
 
   const stock = selectedProduct.stock as Record<string, number>;
   const isAllSoldOut = Object.values(stock).every((qty) => qty <= 0);
@@ -111,14 +126,24 @@ const ProductDetail = () => {
             </CarouselContent>
             {count > 1 && (
               <>
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-75 transition-opacity bg-black/25 text-white text-[11px] font-medium px-2 py-1 rounded-md backdrop-blur-sm flex items-center justify-center w-12">
-                  {current} / {count}
-                </div>
-                <CarouselPrevious className="left-0.5 opacity-0 group-hover:opacity-75 transition-opacity" />
-                <CarouselNext className="right-0.5 opacity-0 group-hover:opacity-75 transition-opacity" />
+                <CarouselPrevious className="hidden lg:flex left-0.5 opacity-0 group-hover:opacity-75 transition-opacity" />
+                <CarouselNext className="hidden lg:flex right-0.5 opacity-0 group-hover:opacity-75 transition-opacity" />
               </>
             )}
           </Carousel>
+          {count > 1 && (
+            <div className="flex justify-center gap-1.5 mt-3 relative">
+              {Array.from({ length: count }).map((_, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "h-1.5 rounded-full transition-all duration-300",
+                    current === i + 1 ? "w-4 bg-zinc-900" : "w-1.5 bg-zinc-300",
+                  )}
+                />
+              ))}
+            </div>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -140,11 +165,17 @@ const ProductDetail = () => {
                 </Badge>
               ))}
             </div>
-            <h1 className="text-1xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
+            <h1 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
               {selectedProduct.name}
             </h1>
             <p className="mt-2 text-2xl font-bold text-zinc-900">
-              ${currencyFormat(selectedProduct.price)}
+              ${currencyFormat(currentPrice)}
+              {size === "" && (
+                <span className="text-sm font-normal text-zinc-400 ml-2">
+                  {" "}
+                  (Starting from)
+                </span>
+              )}
             </p>
           </div>
 
@@ -162,12 +193,12 @@ const ProductDetail = () => {
 
           <div className="space-y-4">
             <div className="flex flex-col gap-3">
-              <p className="text-sm font-medium text-zinc-900">SELECT SIZE</p>
+              <p className="text-sm font-medium text-zinc-900">SERVING SIZE</p>
               <Select onValueChange={(value) => selectSize(value)} value={size}>
                 <SelectTrigger
                   className={`w-full h-12 ${sizeError ? "border-red-500 ring-1 ring-red-500" : ""}`}
                 >
-                  <SelectValue placeholder="Select serving size" />
+                  <SelectValue placeholder="SELECT YOUR SERVING SIZE" />
                 </SelectTrigger>
                 <SelectContent
                   position="popper"
@@ -182,25 +213,36 @@ const ProductDetail = () => {
                         SIZE_ORDER.indexOf(b.toLowerCase())
                       );
                     })
-                    .map((item) => (
-                      <SelectItem
-                        key={item}
-                        value={item}
-                        disabled={stock[item] <= 0}
-                        className="cursor-pointer"
-                      >
-                        <span className="flex items-center w-full min-w-[140px]">
-                          <span className="w-16 inline-block shrink-0">
-                            {item.toUpperCase()}
-                          </span>
-                          {stock[item] <= 0 && (
-                            <span className="text-red-500 text-[10px] font-bold border border-red-200 px-1.5 py-0.5 bg-red-50 leading-none ml-auto">
-                              SOLD OUT
+                    .map((item) => {
+                      const itemPrice = (selectedProduct.price as any)[
+                        item.toLowerCase()
+                      ];
+
+                      return (
+                        <SelectItem
+                          key={item}
+                          value={item}
+                          disabled={stock[item] <= 0}
+                          className="cursor-pointer"
+                        >
+                          <span className="flex items-center justify-between w-full min-w-[280px] sm:min-w-[320px] whitespace-nowrap gap-4">
+                            <span className="flex items-center gap-3">
+                              <span className="font-black text-sm uppercase tracking-tighter w-16 px-4">
+                                {item.toUpperCase()}
+                              </span>
+                              <span className="text-sm font-bold ">
+                                ${currencyFormat(itemPrice)}
+                              </span>
                             </span>
-                          )}
-                        </span>
-                      </SelectItem>
-                    ))}
+                            {stock[item] <= 0 && (
+                              <span className="text-red-500 text-[10px] font-bold border border-red-200 px-1.5 py-0.5 bg-red-50 leading-none">
+                                SOLD OUT
+                              </span>
+                            )}
+                          </span>
+                        </SelectItem>
+                      );
+                    })}
                 </SelectContent>
               </Select>
               {size && stock[size] > 0 && stock[size] <= 10 && (
@@ -232,6 +274,13 @@ const ProductDetail = () => {
           </Button>
         </div>
       </div>
+      <AddToCartModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        product={selectedProduct}
+        size={size}
+        price={prices[size.toLowerCase()] || 0}
+      />
     </div>
   );
 };

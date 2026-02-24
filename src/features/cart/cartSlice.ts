@@ -39,13 +39,6 @@ export const addToCart = createAsyncThunk<
 
     if (response.status !== 200) throw new Error(response.data.error);
 
-    dispatch(
-      showToastMessage({
-        message: "Added an item to cart successfully!",
-        status: "success",
-      }),
-    );
-
     return response.data.cartItemQty;
   } catch (error: any) {
     dispatch(
@@ -58,33 +51,61 @@ export const addToCart = createAsyncThunk<
   }
 });
 
-export const getCartList = createAsyncThunk<
-  unknown,
-  void,
-  { rejectValue: string; dispatch: AppDispatch }
->("cart/getCartList", async (_, { rejectWithValue, dispatch }) => {
-  void dispatch;
-  void rejectWithValue;
-  return undefined;
-});
+export const getCartList = createAsyncThunk<any, void, { rejectValue: string }>(
+  "cart/getCartList",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get("/cart");
+
+      if (response.status !== 200) throw new Error(response.data.error);
+
+      return response.data.cartList;
+    } catch (error: any) {
+      const errMsg = error.response?.data?.error || error.message;
+      return rejectWithValue(errMsg);
+    }
+  },
+);
+
+const calculateTotal = (list: any[]) => {
+  return list.reduce((total, item) => {
+    const itemPrice =
+      item.sizePrice ||
+      (item.productId?.price
+        ? item.productId.price[item.size.toLowerCase()]
+        : 0);
+    return total + itemPrice * item.qty;
+  }, 0);
+};
 
 export const deleteCartItem = createAsyncThunk<
-  unknown,
+  any,
   string,
   { rejectValue: string; dispatch: AppDispatch }
->("cart/deleteCartItem", async (_id, { rejectWithValue, dispatch }) => {
-  void dispatch;
-  void rejectWithValue;
-  return undefined;
+>("cart/deleteCartItem", async (id, { rejectWithValue, dispatch }) => {
+  try {
+    const response = await api.delete(`/cart/${id}`);
+    if (response.status !== 200) throw new Error(response.data.error);
+
+    dispatch(showToastMessage({ message: "Item deleted", status: "success" }));
+    return response.data.cartList;
+  } catch (error: any) {
+    return rejectWithValue(error.error || "Failed to delete item");
+  }
 });
 
 export const updateQty = createAsyncThunk<
-  unknown,
+  any,
   { id: string; value: number },
   { rejectValue: string }
->("cart/updateQty", async (_arg, { rejectWithValue }) => {
-  void rejectWithValue;
-  return undefined;
+>("cart/updateQty", async ({ id, value }, { rejectWithValue }) => {
+  try {
+    const response = await api.put(`/cart/${id}`, { qty: value });
+    if (response.status !== 200) throw new Error(response.data.error);
+    return response.data.cartList;
+  } catch (error: any) {
+    return rejectWithValue(error.error || "Failed to update quantity");
+  }
 });
 
 export const getCartQty = createAsyncThunk<
@@ -130,8 +151,53 @@ const cartSlice = createSlice({
       state.loading = false;
       state.error = action.payload || "";
     });
+    builder.addCase(getCartQty.pending, (state, action) => {
+      state.loading = true;
+    });
     builder.addCase(getCartQty.fulfilled, (state, action) => {
-      state.cartItemCount = action.payload;
+      state.loading = false;
+      state.error = "";
+      state.cartItemCount = action.payload || 0;
+    });
+    builder.addCase(getCartQty.rejected, (state, action) => {
+      state.loading = false;
+      state.error =
+        (action.payload as string) || "Failed to fetch cart quantity";
+    });
+    builder.addCase(getCartList.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(getCartList.fulfilled, (state, action) => {
+      state.loading = false;
+      state.error = "";
+
+      const list = action.payload || [];
+      state.cartList = list;
+
+      state.totalPrice = list.reduce((total: number, item: any) => {
+        const itemPrice =
+          item.sizePrice ||
+          (item.productId?.price
+            ? item.productId.price[item.size.toLowerCase()]
+            : 0);
+        return total + itemPrice * item.qty;
+      }, 0);
+    });
+    builder.addCase(getCartList.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+    builder.addCase(deleteCartItem.fulfilled, (state, action) => {
+      state.loading = false;
+      state.cartList = action.payload;
+      state.totalPrice = calculateTotal(action.payload);
+      state.cartItemCount = action.payload.length;
+    });
+
+    builder.addCase(updateQty.fulfilled, (state, action) => {
+      state.loading = false;
+      state.cartList = action.payload;
+      state.totalPrice = calculateTotal(action.payload);
     });
   },
 });

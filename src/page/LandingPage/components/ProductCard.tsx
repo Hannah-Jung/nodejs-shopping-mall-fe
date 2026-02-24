@@ -21,6 +21,13 @@ const ProductCard = ({ item }: ProductCardProps) => {
 
   const isOutOfStock = totalStock === 0;
 
+  const displayPrice = (() => {
+    const prices = Object.values(item.price || {}).filter(
+      (v) => typeof v === "number" && v > 0,
+    ) as number[];
+    return prices.length > 0 ? Math.min(...prices) : 0;
+  })();
+
   return (
     <Card
       className={cn(
@@ -55,13 +62,13 @@ const ProductCard = ({ item }: ProductCardProps) => {
       </div>
 
       <div className={cn("p-3", isOutOfStock && "opacity-60")}>
-        <div className="text-sm font-normal text-zinc-800 truncate mb-1">
+        <div className="text-md font-semibold text-zinc-800 line-clamp-2 break-words mb-1">
           {item.name}
         </div>
 
         <div className="flex items-baseline justify-between gap-2">
           <div className="text-base font-bold text-zinc-900">
-            ${currencyFormat(item.price)}
+            <p>${currencyFormat(displayPrice)} ~</p>
           </div>
 
           <div className="flex-shrink-0">

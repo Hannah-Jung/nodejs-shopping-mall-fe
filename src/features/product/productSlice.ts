@@ -10,7 +10,11 @@ export interface Product {
   image: string[];
   category: string[];
   description: string;
-  price: number;
+  price: {
+    single: number;
+    double: number;
+    family: number;
+  };
   stock: Record<string, number>;
   status?: string;
   isDeleted?: boolean;

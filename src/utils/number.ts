@@ -1,7 +1,17 @@
-export function currencyFormat(value: number | undefined): string {
-  const number = value !== undefined ? value : 0;
-  return number.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
-}
+export const currencyFormat = (
+  value: number | string | null | undefined,
+): string => {
+  if (value === undefined || value === null) return "0.00";
+
+  const numberValue = typeof value === "string" ? parseFloat(value) : value;
+
+  if (isNaN(numberValue)) return "0.00";
+
+  return numberValue.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
 
 export function cc_expires_format(string: string): string {
   return string

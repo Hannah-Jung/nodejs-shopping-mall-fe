@@ -21,6 +21,7 @@ import { logoutThunk } from "../../features/user/userSlice";
 import { useAppDispatch, useAppSelector } from "../../features/hooks";
 import type { User } from "@/types/user";
 import { logoutCart } from "@/features/cart/cartSlice";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface NavbarProps {
   user: User | null;
@@ -86,7 +87,7 @@ const Navbar = ({ user }: NavbarProps) => {
     >
       <Link
         to="/"
-        className="flex items-center gap-2 font-medium text-xl cursor-pointer text-primary hover:opacity-90 transition-opacity"
+        className="flex items-center gap-2 font-medium text-xl cursor-pointer text-primary  transition-opacity"
         aria-label="PREPT"
       >
         <Utensils className="size-5" strokeWidth={2} />
@@ -160,7 +161,6 @@ const Navbar = ({ user }: NavbarProps) => {
             </span>
           )}
         </button>
-
         <Link
           to="/cart"
           className={`relative p-2 rounded-full transition-colors ${
@@ -169,14 +169,24 @@ const Navbar = ({ user }: NavbarProps) => {
           aria-label="Cart"
         >
           <ShoppingCart className={`size-5 ${isAdmin ? "text-white" : ""}`} />
-          {cartItemCount >= 1 && (
-            <span
-              className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground"
-              aria-label={`Cart ${cartItemCount}`}
-            >
-              {cartItemCount > 99 ? "99+" : cartItemCount}
-            </span>
-          )}
+
+          <AnimatePresence mode="popLayout">
+            {cartItemCount >= 1 && (
+              <motion.span
+                key={cartItemCount}
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: [1.4, 0.8, 1], opacity: 1 }}
+                exit={{ scale: 0.6, opacity: 0 }}
+                transition={{
+                  duration: 0.3,
+                  ease: "backOut",
+                }}
+                className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground"
+              >
+                {cartItemCount > 99 ? "99+" : cartItemCount}
+              </motion.span>
+            )}
+          </AnimatePresence>
         </Link>
 
         <div className="relative" ref={profileRef}>

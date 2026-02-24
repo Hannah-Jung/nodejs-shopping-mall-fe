@@ -1,3 +1,5 @@
+import React, { useState } from "react";
+import ConfirmModal from "@/common/component/ConfirmModal";
 import { Button } from "@/components/ui/button";
 import type { Product } from "@/features/product/productSlice";
 import { SquarePen, Trash2 } from "lucide-react";
@@ -12,6 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { currencyFormat } from "@/utils/number";
 
 interface ProductTableProps {
   header: string[];
@@ -31,6 +34,12 @@ const ProductTable = ({
   openEditForm,
   currentPage,
 }: ProductTableProps) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const openDeleteModal = (item: any) => {
+    setSelectedProduct(item);
+    setIsModalOpen(true);
+  };
   return (
     <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
       <table className="w-full text-sm text-left">
@@ -49,177 +58,204 @@ const ProductTable = ({
 
         <tbody className="block sm:table-row-group">
           {data.length > 0 ? (
-            data.map((product, index) => (
-              <tr
-                key={product._id}
-                className={cn(
-                  "block sm:table-row border-b border-zinc-100 last:border-none transition-all duration-300",
-                  product.status === "inactive"
-                    ? "bg-zinc-50/50 opacity-80"
-                    : "bg-white hover:bg-zinc-50",
-                )}
-              >
-                <div className="sm:hidden flex justify-between items-center bg-zinc-50 px-4 py-2 border-b border-zinc-100">
-                  <span className="font-mono text-[10px] text-zinc-400">
-                    #{index + 1 + (currentPage - 1) * 5}
-                  </span>
-                  <span className="font-mono text-[10px] text-zinc-500 font-bold">
+            data.map((product, index) => {
+              const priceValues = Object.values(product.price as any).filter(
+                (v) => typeof v === "number" && v > 0,
+              ) as number[];
+              const displayPrice =
+                priceValues.length > 0 ? Math.min(...priceValues) : 0;
+
+              return (
+                <tr
+                  key={product._id}
+                  className={cn(
+                    "block sm:table-row border-b border-zinc-100 last:border-none transition-all duration-300",
+                    product.status === "inactive"
+                      ? "bg-zinc-50/50 opacity-80"
+                      : "bg-white hover:bg-zinc-50",
+                  )}
+                >
+                  <div className="sm:hidden flex justify-between items-center bg-zinc-50 px-4 py-2 border-b border-zinc-100">
+                    <span className="font-mono text-[10px] text-zinc-400">
+                      #{index + 1 + (currentPage - 1) * 5}
+                    </span>
+                    <span className="font-mono text-[10px] text-zinc-500 font-bold">
+                      {product.sku}
+                    </span>
+                  </div>
+
+                  <td className="hidden sm:table-cell p-2 sm:py-4 text-zinc-500 text-center font-mono text-xs border-zinc-50/50">
+                    {index + 1 + (currentPage - 1) * 5}
+                  </td>
+
+                  <td className="hidden sm:table-cell p-2 sm:py-4 text-center font-mono text-xs border-zinc-50/50">
                     {product.sku}
-                  </span>
-                </div>
+                  </td>
 
-                <td className="hidden sm:table-cell p-2 sm:py-4 text-zinc-500 text-center font-mono text-xs border-r border-zinc-50/50">
-                  {index + 1 + (currentPage - 1) * 5}
-                </td>
-
-                <td className="hidden sm:table-cell p-2 sm:py-4 text-center font-mono text-xs border-r border-zinc-50/50">
-                  {product.sku}
-                </td>
-
-                <td className="block sm:table-cell p-4 sm:p-2 sm:py-4">
-                  <div className="flex gap-4 sm:items-center sm:justify-center">
-                    <div className="relative shrink-0">
-                      <img
-                        src={product.image[0]}
-                        alt={product.name}
-                        className={cn(
-                          "w-24 h-28 sm:w-16 sm:h-20 object-cover rounded-lg border border-zinc-200 shadow-sm transition-all",
-                          product.status === "inactive" &&
-                            "grayscale opacity-60",
-                        )}
-                      />
-                      <div className="absolute -top-2 -left-2 sm:hidden">
-                        <span
+                  <td className="block sm:table-cell p-4 sm:p-2 sm:py-4">
+                    <div className="flex gap-4 sm:items-center sm:justify-center">
+                      <div className="relative shrink-0">
+                        <img
+                          src={product.image[0]}
+                          alt={product.name}
                           className={cn(
-                            "px-2 py-0.5 rounded-md text-[9px] font-black uppercase shadow-sm border",
-                            product.status === "active"
-                              ? "bg-green-500 text-white"
-                              : "bg-red-500 text-white",
+                            "w-32 h-32 sm:w-20 sm:h-20 object-cover rounded-lg border border-zinc-200 shadow-sm transition-all",
+                            product.status === "inactive" &&
+                              "grayscale opacity-60",
                           )}
-                        >
-                          {product.status}
-                        </span>
+                        />
                       </div>
-                    </div>
 
-                    <div className="flex flex-col justify-center gap-1 flex-1 sm:hidden">
-                      <div className="font-bold text-zinc-900 leading-tight line-clamp-2 text-base">
-                        {product.name}
-                      </div>
-                      <div className="text-lg font-black text-zinc-900">
-                        ${product.price.toLocaleString()}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-
-                <td className="hidden sm:table-cell p-4 sm:py-4 font-medium text-zinc-900 max-w-[250px]">
-                  <div
-                    className="line-clamp-2 break-words"
-                    title={product.name}
-                  >
-                    {product.name}
-                  </div>
-                </td>
-
-                <td className="hidden sm:table-cell p-2 sm:py-4 text-center text-zinc-900 font-semibold">
-                  ${product.price.toLocaleString()}
-                </td>
-
-                <td className="block sm:table-cell px-4 pb-4 sm:py-4">
-                  <div className="grid grid-cols-3 gap-3 bg-zinc-50/50 p-3 rounded-xl sm:bg-transparent sm:p-0 sm:flex sm:flex-col sm:items-center sm:max-w-[120px] sm:mx-auto">
-                    {Object.entries(product.stock)
-                      .sort(
-                        ([a], [b]) =>
-                          SIZE_ORDER.indexOf(a.toLowerCase()) -
-                          SIZE_ORDER.indexOf(b.toLowerCase()),
-                      )
-                      .map(([size, qty]) => (
-                        <div
-                          key={size}
-                          className="flex flex-col gap-1 sm:w-full"
-                        >
-                          <div className="flex justify-between text-[10px]">
-                            <span
-                              className={cn(
-                                "font-bold uppercase",
-                                qty <= 0 ? "text-red-600" : "text-zinc-400",
-                              )}
-                            >
-                              {size}
-                            </span>
-                            <span
-                              className={cn(
-                                "font-mono font-bold",
-                                qty <= 0 ? "text-red-600" : "text-zinc-700",
-                              )}
-                            >
-                              {qty}
-                            </span>
-                          </div>
-                          <div className="h-1 w-full bg-zinc-200 rounded-full overflow-hidden">
-                            <div
-                              className={cn(
-                                "h-full transition-all duration-500",
-                                qty <= 0
-                                  ? "bg-zinc-300"
-                                  : qty < 20
-                                    ? "bg-red-500"
-                                    : "bg-emerald-500",
-                              )}
-                              style={{
-                                width: `${Math.min((qty / 100) * 100, 100)}%`,
-                              }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </td>
-
-                <td className="hidden sm:table-cell p-2 sm:py-4 text-center">
-                  <span
-                    className={cn(
-                      "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase",
-                      product.status === "active"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700",
-                    )}
-                  >
-                    {product.status}
-                  </span>
-                </td>
-
-                <td className="block sm:table-cell p-4 pt-0 sm:py-4">
-                  <div className="flex gap-2 justify-end sm:justify-center border-t sm:border-0 pt-3 sm:pt-0">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-10 flex-1 sm:flex-none sm:h-9 sm:w-9 p-0 hover:text-primary transition-all cursor-pointer bg-white"
-                      onClick={() => openEditForm(product)}
-                    >
-                      <SquarePen className="size-4 mr-2 sm:mr-0" />
-                      <span className="sm:hidden text-xs font-bold">EDIT</span>
-                    </Button>
-
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-10 flex-1 sm:flex-none sm:h-9 sm:w-9 p-0 hover:text-red-500 transition-all cursor-pointer bg-white"
-                        >
-                          <Trash2 className="size-4 mr-2 sm:mr-0" />
-                          <span className="sm:hidden text-xs font-bold">
-                            DELETE
+                      <div className="flex flex-col justify-center gap-1 flex-1 sm:hidden">
+                        <div className="mb-1.5">
+                          <span
+                            className={cn(
+                              "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-tight border",
+                              product.status === "active"
+                                ? "bg-green-100 text-green-700 border-green-200"
+                                : "bg-red-100 text-red-700 border-red-200",
+                            )}
+                          >
+                            {product.status}
                           </span>
-                        </Button>
-                      </AlertDialogTrigger>
-                    </AlertDialog>
-                  </div>
-                </td>
-              </tr>
-            ))
+                        </div>
+                        <div className="font-bold text-zinc-900 leading-tight line-clamp-3 text-base">
+                          {product.name}
+                        </div>
+                        <div className="text-lg font-black text-zinc-900 mt-1">
+                          ${currencyFormat(displayPrice)} ~
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td className="hidden sm:table-cell p-4 sm:py-4 font-medium text-zinc-900 max-w-[250px]">
+                    <div
+                      className="line-clamp-2 break-words"
+                      title={product.name}
+                    >
+                      {product.name}
+                    </div>
+                  </td>
+
+                  <td className="hidden sm:table-cell p-2 sm:py-4 text-center text-zinc-900 font-semibold">
+                    ${currencyFormat(displayPrice)} ~
+                  </td>
+
+                  <td className="block sm:table-cell px-4 pb-4 sm:py-4">
+                    <div className="grid grid-cols-3 gap-5 bg-zinc-50/50 p-3 rounded-md sm:bg-transparent sm:p-0 sm:flex sm:flex-col sm:items-center sm:gap-2 sm:max-w-[120px] sm:mx-auto">
+                      {SIZE_ORDER.map((orderedSize) => {
+                        const stockEntry = Object.entries(product.stock).find(
+                          ([s]) =>
+                            s.toLowerCase() === orderedSize.toLowerCase(),
+                        );
+
+                        if (!stockEntry) {
+                          return (
+                            <div
+                              key={orderedSize}
+                              className="flex flex-col gap-1 w-full sm:min-h-[26px] justify-center"
+                              aria-hidden="true"
+                            >
+                              <div className="flex justify-between items-center text-[10px]">
+                                <span className="font-bold uppercase opacity-0">
+                                  {orderedSize}
+                                </span>
+                              </div>
+                              <div className="h-1 w-full " />
+                            </div>
+                          );
+                        }
+
+                        const [size, qty] = stockEntry;
+                        return (
+                          <div
+                            key={size}
+                            className="flex flex-col gap-1 w-full"
+                          >
+                            <div className="flex justify-between items-baseline text-[10px]">
+                              <span
+                                className={cn(
+                                  "font-bold uppercase min-w-[45px] truncate",
+                                  qty <= 0 ? "text-red-600" : "text-zinc-400",
+                                )}
+                                title={size}
+                              >
+                                {size}
+                              </span>
+                              <span
+                                className={cn(
+                                  "font-mono font-bold ml-2",
+                                  qty <= 0 ? "text-red-600" : "text-zinc-700",
+                                )}
+                              >
+                                {qty}
+                              </span>
+                            </div>
+                            <div className="h-1 w-full bg-zinc-200 rounded-full overflow-hidden">
+                              <div
+                                className={cn(
+                                  "h-full transition-all duration-500",
+                                  qty <= 0
+                                    ? "bg-zinc-300"
+                                    : qty < 20
+                                      ? "bg-red-500"
+                                      : "bg-emerald-500",
+                                )}
+                                style={{
+                                  width: `${Math.min((qty / 100) * 100, 100)}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </td>
+
+                  <td className="hidden sm:table-cell p-2 sm:py-4 text-center">
+                    <span
+                      className={cn(
+                        "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase",
+                        product.status === "active"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700",
+                      )}
+                    >
+                      {product.status}
+                    </span>
+                  </td>
+
+                  <td className="block sm:table-cell p-4 pt-0 sm:py-4">
+                    <div className="flex gap-2 justify-end sm:justify-center border-t sm:border-0 pt-3 sm:pt-0">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-10 flex-1 sm:flex-none sm:h-9 sm:w-9 p-0 hover:text-primary transition-all cursor-pointer bg-white"
+                        onClick={() => openEditForm(product)}
+                      >
+                        <SquarePen className="size-4 mr-2 sm:mr-0" />
+                        <span className="sm:hidden text-xs font-bold">
+                          EDIT
+                        </span>
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-10 flex-1 sm:flex-none sm:h-9 sm:w-9 p-0 hover:text-red-500 transition-all cursor-pointer bg-white"
+                        onClick={() => openDeleteModal(product)}
+                      >
+                        <Trash2 className="size-4 mr-2 sm:mr-0" />
+                        <span className="sm:hidden text-xs font-bold">
+                          DELETE
+                        </span>
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })
           ) : (
             <tr>
               <td
@@ -232,6 +268,34 @@ const ProductTable = ({
           )}
         </tbody>
       </table>
+      <ConfirmModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={() => {
+          if (selectedProduct) deleteItem(selectedProduct._id);
+          setIsModalOpen(false);
+        }}
+        title="Are you sure you want to delete this item?"
+        variant="danger"
+        confirmText="DELETE"
+        description={
+          selectedProduct && (
+            <div className="flex flex-col items-center text-center pt-2">
+              <img
+                src={selectedProduct.image[0]}
+                className="w-24 h-24 object-cover rounded-md border border-zinc-100 mb-4"
+                alt={selectedProduct.name}
+              />
+              <p className="w-full font-bold text-red-600 text-sm mb-1 uppercase tracking-tight break-words">
+                {selectedProduct.name}
+              </p>
+              <p className="w-full text-zinc-500 text-[13px] font-medium leading-relaxed">
+                will be deleted. This action cannot be undone.
+              </p>
+            </div>
+          )
+        }
+      />
     </div>
   );
 };

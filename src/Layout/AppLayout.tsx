@@ -13,6 +13,7 @@ interface AppLayoutProps {
 }
 
 const AppLayout = ({ children }: AppLayoutProps) => {
+  const location = useLocation();
   const dispatch = useAppDispatch();
   const { user, loading } = useAppSelector((state) => state.user);
   const token = sessionStorage.getItem("token");
@@ -40,7 +41,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
     <div>
       <ToastMessage />
       <Navbar user={user} />
-      <main className="page-transition">{children}</main>
+      <main key={location.pathname} className="page-transition">
+        {children}
+      </main>
     </div>
   );
 };
