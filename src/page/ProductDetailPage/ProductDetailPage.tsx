@@ -26,6 +26,8 @@ import { Flame, Heart } from "lucide-react";
 import { addToCart } from "@/features/cart/cartSlice";
 import { cn } from "@/lib/utils";
 import AddToCartModal from "./component/AddToCartModal";
+import QtyStepper from "@/common/component/QtyStepper";
+import { getDisplayPrice } from "@/utils/displayPrice";
 
 const ProductDetail = () => {
   const dispatch = useAppDispatch();
@@ -39,6 +41,7 @@ const ProductDetail = () => {
   const [current, setCurrent] = useState(0);
   const [count, setCount] = useState(0);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [qty, setQty] = useState(1);
 
   useEffect(() => {
     if (!api) return;
@@ -68,7 +71,7 @@ const ProductDetail = () => {
       return;
     }
 
-    const response = await dispatch(addToCart({ id, size }));
+    const response = await dispatch(addToCart({ id, size, qty }));
 
     if (response.meta.requestStatus === "fulfilled") {
       setShowSuccessModal(true);
@@ -78,6 +81,7 @@ const ProductDetail = () => {
   const selectSize = (value: string) => {
     setSize(value);
     setSizeError(false);
+    setQty(1);
   };
 
   if (loading || !selectedProduct) {
@@ -94,17 +98,15 @@ const ProductDetail = () => {
   }
 
   const prices = selectedProduct.price as unknown as Record<string, number>;
-  const priceValues = Object.values(prices).filter(
-    (v) => typeof v === "number" && v > 0,
-  );
-
-  const minPrice = priceValues.length > 0 ? Math.min(...priceValues) : 0;
-
-  const currentPrice = size ? prices[size.toLowerCase()] : minPrice;
+  const displayPrice = getDisplayPrice(selectedProduct);
+  const currentPrice =
+    size !== ""
+      ? (selectedProduct.price as any)[size.toLowerCase()]
+      : displayPrice;
 
   const stock = selectedProduct.stock as Record<string, number>;
   const isAllSoldOut = Object.values(stock).every((qty) => qty <= 0);
-
+  const maxLimit = size ? Math.min(stock[size], 10) : 10;
   return (
     <div className="mx-auto max-w-4xl px-4 py-5 lg:py-20">
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 items-start">
@@ -165,18 +167,19 @@ const ProductDetail = () => {
                 </Badge>
               ))}
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
+            <h1 className="text-2xl uppercase font-bold tracking-tight text-zinc-900 sm:text-4xl">
               {selectedProduct.name}
             </h1>
-            <p className="mt-2 text-2xl font-bold text-zinc-900">
-              ${currencyFormat(currentPrice)}
+            <div className="mt-4">
               {size === "" && (
-                <span className="text-sm font-normal text-zinc-400 ml-2">
-                  {" "}
-                  (Starting from)
-                </span>
+                <p className="text-[10px] font-black text-zinc-500 uppercase  mb-1">
+                  Starts from
+                </p>
               )}
-            </p>
+              <p className="text-2xl font-bold text-zinc-900 leading-none">
+                ${currencyFormat(currentPrice)}
+              </p>
+            </div>
           </div>
 
           <div>
@@ -184,7 +187,7 @@ const ProductDetail = () => {
               {selectedProduct.description}
             </p>
 
-            <p className="text-[11px] text-zinc-400 italic border-t pt-2 mb-8 leading-normal">
+            <p className="text-[11px] text-zinc-400 border-t pt-2 mb-8 leading-normal">
               * For the most accurate information, please refer to the actual
               product packaging. Nutrition and ingredients may vary by store
               location.
@@ -245,8 +248,9 @@ const ProductDetail = () => {
                     })}
                 </SelectContent>
               </Select>
+
               {size && stock[size] > 0 && stock[size] <= 10 && (
-                <p className="text-[13px] text-red-600 mt-3 font-bold flex items-center gap-1 animate-pulse">
+                <p className="text-[13px] text-red-600 mt-1 font-bold flex items-center gap-1 animate-pulse">
                   <Flame className="size-4 fill-red-600" /> ONLY {stock[size]}{" "}
                   LEFT! ORDER SOON
                 </p>
@@ -256,31 +260,41 @@ const ProductDetail = () => {
                   Please select a serving size to continue
                 </p>
               )}
+              <div className="pt-2">
+                <p className="text-sm font-medium text-zinc-900 pb-1">
+                  QUANTITY
+                </p>
+                <div className="w-full [&_div]:!w-full [&_div]:!flex [&_div]:!justify-between">
+                  <QtyStepper value={qty} onChange={setQty} max={maxLimit} />
+                </div>
+              </div>
             </div>
-          </div>
+            <div className="mt-6 flex flex-col gap-3"></div>
 
-          <Button
-            size="lg"
-            disabled={isAllSoldOut}
-            className={cn(
-              "w-full mt-6 h-14 text-lg cursor-pointer font-bold transition-all duration-500 ease-in-out",
-              isAllSoldOut
-                ? "bg-zinc-200 text-zinc-400 cursor-not-allowed"
-                : "bg-zinc-900 text-white hover:bg-primary",
-            )}
-            onClick={addItemToCart}
-          >
-            {isAllSoldOut ? "OUT OF STOCK" : "ADD TO CART"}
-          </Button>
+            <Button
+              size="lg"
+              disabled={isAllSoldOut}
+              className={cn(
+                "w-full mt-1 h-14 text-lg cursor-pointer font-bold transition-all duration-500 ease-in-out",
+                isAllSoldOut
+                  ? "bg-zinc-200 text-zinc-400 cursor-not-allowed"
+                  : "bg-zinc-900 text-white hover:bg-primary",
+              )}
+              onClick={addItemToCart}
+            >
+              {isAllSoldOut ? "OUT OF STOCK" : "ADD TO CART"}
+            </Button>
+          </div>
         </div>
+        <AddToCartModal
+          isOpen={showSuccessModal}
+          onClose={() => setShowSuccessModal(false)}
+          product={selectedProduct}
+          size={size}
+          qty={qty}
+          price={prices[size.toLowerCase()] || 0}
+        />
       </div>
-      <AddToCartModal
-        isOpen={showSuccessModal}
-        onClose={() => setShowSuccessModal(false)}
-        product={selectedProduct}
-        size={size}
-        price={prices[size.toLowerCase()] || 0}
-      />
     </div>
   );
 };

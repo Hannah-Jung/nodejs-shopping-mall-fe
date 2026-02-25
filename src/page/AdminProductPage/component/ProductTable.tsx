@@ -15,6 +15,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { currencyFormat } from "@/utils/number";
+import { getDisplayPrice } from "@/utils/displayPrice";
 
 interface ProductTableProps {
   header: string[];
@@ -59,11 +60,10 @@ const ProductTable = ({
         <tbody className="block sm:table-row-group">
           {data.length > 0 ? (
             data.map((product, index) => {
-              const priceValues = Object.values(product.price as any).filter(
-                (v) => typeof v === "number" && v > 0,
-              ) as number[];
-              const displayPrice =
-                priceValues.length > 0 ? Math.min(...priceValues) : 0;
+              const displayPrice = getDisplayPrice(product);
+              const isSoldOut = !SIZE_ORDER.some(
+                (size) => product.stock[size] > 0,
+              );
 
               return (
                 <tr
@@ -108,16 +108,23 @@ const ProductTable = ({
 
                       <div className="flex flex-col justify-center gap-1 flex-1 sm:hidden">
                         <div className="mb-1.5">
-                          <span
-                            className={cn(
-                              "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-tight border",
-                              product.status === "active"
-                                ? "bg-green-100 text-green-700 border-green-200"
-                                : "bg-red-100 text-red-700 border-red-200",
+                          <div className="mb-1.5 flex flex-wrap items-center gap-3">
+                            <span
+                              className={cn(
+                                "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-tight border",
+                                product.status === "active"
+                                  ? "bg-green-100 text-green-700 border-green-200"
+                                  : "bg-red-100 text-red-700 border-red-200",
+                              )}
+                            >
+                              {product.status}
+                            </span>
+                            {isSoldOut && (
+                              <span className="w-fit bg-red-500 text-white text-[9px] font-black px-2 py-1 rounded-sm uppercase tracking-tighter">
+                                OUT OF STOCK
+                              </span>
                             )}
-                          >
-                            {product.status}
-                          </span>
+                          </div>
                         </div>
                         <div className="font-bold text-zinc-900 leading-tight line-clamp-3 text-base">
                           {product.name}
@@ -131,8 +138,8 @@ const ProductTable = ({
 
                   <td className="hidden sm:table-cell p-4 sm:py-4 font-medium text-zinc-900 max-w-[250px]">
                     <div
-                      className="line-clamp-2 break-words"
-                      title={product.name}
+                      className="line-clamp-3 uppercase break-words"
+                      title={product.name.toUpperCase()}
                     >
                       {product.name}
                     </div>
@@ -140,6 +147,11 @@ const ProductTable = ({
 
                   <td className="hidden sm:table-cell p-2 sm:py-4 text-center text-zinc-900 font-semibold">
                     ${currencyFormat(displayPrice)} ~
+                    {isSoldOut && (
+                      <span className="block text-[10px] text-red-500 font-bold">
+                        OUT OF STOCK
+                      </span>
+                    )}
                   </td>
 
                   <td className="block sm:table-cell px-4 pb-4 sm:py-4">
@@ -179,7 +191,7 @@ const ProductTable = ({
                                   "font-bold uppercase min-w-[45px] truncate",
                                   qty <= 0 ? "text-red-600" : "text-zinc-400",
                                 )}
-                                title={size}
+                                title={size.toUpperCase()}
                               >
                                 {size}
                               </span>

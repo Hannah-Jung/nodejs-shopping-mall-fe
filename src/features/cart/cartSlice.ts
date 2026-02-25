@@ -3,6 +3,7 @@ import type { AppDispatch } from "../store";
 import { showToastMessage } from "../common/uiSlice";
 import api from "@/utils/api";
 import { act } from "react";
+import { createOrder } from "../order/orderSlice";
 
 export interface CartItem {
   _id?: string;
@@ -31,25 +32,28 @@ const initialState: CartState = {
 
 export const addToCart = createAsyncThunk<
   any,
-  { id: string; size: string },
+  { id: string; size: string; qty: number },
   { rejectValue: string; dispatch: AppDispatch }
->("cart/addToCart", async ({ id, size }, { rejectWithValue, dispatch }) => {
-  try {
-    const response = await api.post("/cart", { productId: id, size, qty: 1 });
+>(
+  "cart/addToCart",
+  async ({ id, size, qty }, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await api.post("/cart", { productId: id, size, qty });
 
-    if (response.status !== 200) throw new Error(response.data.error);
+      if (response.status !== 200) throw new Error(response.data.error);
 
-    return response.data.cartItemQty;
-  } catch (error: any) {
-    dispatch(
-      showToastMessage({
-        message: error.error || "Failed to add an item to cart",
-        status: "error",
-      }),
-    );
-    return rejectWithValue(error.error);
-  }
-});
+      return response.data.cartItemQty;
+    } catch (error: any) {
+      dispatch(
+        showToastMessage({
+          message: error.error || "Failed to add an item to cart",
+          status: "error",
+        }),
+      );
+      return rejectWithValue(error.error);
+    }
+  },
+);
 
 export const getCartList = createAsyncThunk<any, void, { rejectValue: string }>(
   "cart/getCartList",
@@ -198,6 +202,11 @@ const cartSlice = createSlice({
       state.loading = false;
       state.cartList = action.payload;
       state.totalPrice = calculateTotal(action.payload);
+    });
+    builder.addCase(createOrder.fulfilled, (state) => {
+      state.cartList = [];
+      state.totalPrice = 0;
+      state.cartItemCount = 0;
     });
   },
 });

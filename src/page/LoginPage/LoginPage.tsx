@@ -130,7 +130,7 @@ const Login = () => {
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">
-                  Email <span className="text-destructive">*</span>
+                  EMAIL <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
                   <Controller
@@ -161,7 +161,7 @@ const Login = () => {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">
-                  Password <span className="text-destructive">*</span>
+                  PASSWORD <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
                   <Controller
@@ -173,7 +173,7 @@ const Login = () => {
                         <Input
                           id="password"
                           type={showPassword ? "text" : "password"}
-                          placeholder="Password"
+                          placeholder="PASSWORD"
                           value={field.value}
                           onChange={field.onChange}
                           onBlur={field.onBlur}
@@ -216,7 +216,7 @@ const Login = () => {
           <Button
             type="submit"
             form="login-form"
-            className="w-full bg-[#F97316] hover:bg-[#ea580c] text-white"
+            className="w-full uppercase bg-[#F97316] hover:bg-[#ea580c] text-white"
             disabled={!!loading}
           >
             {loading ? (
@@ -228,7 +228,7 @@ const Login = () => {
               "Login"
             )}
           </Button>
-          <div className="google-login-wrap w-full [&_.abc]:!hidden">
+          <div className="google-login-wrap uppercase w-full [&_.abc]:!hidden">
             <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
               <GoogleLogin
                 onSuccess={handleGoogleLogin}
@@ -237,7 +237,7 @@ const Login = () => {
               />
             </GoogleOAuthProvider>
           </div>
-          <div className="text-sm text-muted-foreground pt-4">
+          <div className="text-sm uppercase text-muted-foreground pt-4">
             Don&apos;t have an account yet?{" "}
             <Link
               to="/register"

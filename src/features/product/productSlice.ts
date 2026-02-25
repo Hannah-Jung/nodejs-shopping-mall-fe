@@ -62,6 +62,7 @@ export const getProductList = createAsyncThunk<
         page: params?.page ?? 1,
         name: params?.name ?? "",
         limit: params?.limit,
+        admin: params?.admin,
       },
     });
     return data;

@@ -338,7 +338,7 @@ const NewItemDialog = ({
         >
           <div className="sticky top-0 z-10 bg-white px-8 py-6 border-b flex justify-between items-center">
             <div>
-              <h2 className="text-2xl font-bold tracking-tight text-zinc-900">
+              <h2 className="text-2xl uppercase font-bold tracking-tight text-zinc-900">
                 {mode === "new" ? "Create New Product" : "Edit Product"}
               </h2>
             </div>
@@ -393,7 +393,10 @@ const NewItemDialog = ({
                       }
                     >
                       <SelectTrigger
-                        className={cn(inputStyles, "h-9 cursor-pointer")}
+                        className={cn(
+                          inputStyles,
+                          "h-9 uppercase cursor-pointer",
+                        )}
                       >
                         <SelectValue />
                       </SelectTrigger>
@@ -408,17 +411,18 @@ const NewItemDialog = ({
                   </div>
                 </div>
                 <div className="w-full">
-                  <label className="text-sm font-semibold mb-1.5 block text-zinc-700">
+                  <label className="text-sm font-semibold mb-1.5 block text-zinc-700 ">
                     PRODUCT NAME
                   </label>
                   <textarea
                     name="name"
                     value={formData.name}
+                    rows={2}
                     onChange={handleChange}
                     className={cn(
                       inputStyles,
-                      "w-full resize-none py-2 px-3 leading-tight transition-all",
-                      "h-14 sm:h-9 sm:py-1.5",
+                      "w-full resize-none uppercase py-2 px-3 leading-tight transition-all",
+                      "min-h-[4rem] sm:min-h-[2.5rem]",
                       errors.name && "border-red-500",
                     )}
                     placeholder="e.g. Chicken Breast Burrito Bowl"
@@ -439,7 +443,7 @@ const NewItemDialog = ({
                   rows={3}
                   className={cn(
                     inputStyles,
-                    "resize-none overflow-hidden transition-[height] duration-200",
+                    "resize-none overflow-hidden  transition-[height] duration-200",
                   )}
                   placeholder="Write a detailed product description..."
                 />
@@ -461,7 +465,7 @@ const NewItemDialog = ({
                           onHandleCategory({ target: { value: val } } as any)
                         }
                         className={cn(
-                          "px-4 py-2 rounded-md border text-sm font-medium transition-all cursor-pointer select-none",
+                          "px-4 py-2 rounded-md border uppercase text-sm font-medium transition-all cursor-pointer select-none",
                           checked
                             ? "bg-primary border-primary text-white shadow-sm"
                             : "bg-white border-zinc-200 text-zinc-600 hover:border-primary/50 hover:bg-zinc-50",
@@ -508,7 +512,9 @@ const NewItemDialog = ({
                       {formData.image?.length === 0 ? (
                         <div className="w-full py-10 flex flex-col items-center justify-center text-zinc-400">
                           <ImageIcon className="size-10 mb-2 opacity-20" />
-                          <p className="text-sm">No images uploaded yet</p>
+                          <p className="text-sm uppercase">
+                            No images uploaded yet
+                          </p>
                         </div>
                       ) : (
                         formData.image?.map((imgUrl: string, idx: number) => (
@@ -705,13 +711,13 @@ const NewItemDialog = ({
                 type="button"
                 variant="ghost"
                 onClick={handleClose}
-                className="px-8 text-zinc-500 hover:bg-zinc-100 cursor-pointer"
+                className="px-8 text-zinc-500 uppercase hover:bg-zinc-100 cursor-pointer"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                className="px-6 font-bold text-md shadow-lg bg-black transition-all active:scale-95 cursor-pointer"
+                className="px-6 font-bold uppercase text-md shadow-lg bg-black transition-all active:scale-95 cursor-pointer"
               >
                 {mode === "new" ? "Create Product" : "Save Changes"}
               </Button>

@@ -4,6 +4,7 @@ import type { Product } from "@/features/product/productSlice";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getDisplayPrice } from "@/utils/displayPrice";
 
 interface ProductCardProps {
   item: Product;
@@ -21,12 +22,7 @@ const ProductCard = ({ item }: ProductCardProps) => {
 
   const isOutOfStock = totalStock === 0;
 
-  const displayPrice = (() => {
-    const prices = Object.values(item.price || {}).filter(
-      (v) => typeof v === "number" && v > 0,
-    ) as number[];
-    return prices.length > 0 ? Math.min(...prices) : 0;
-  })();
+  const displayPrice = getDisplayPrice(item);
 
   return (
     <Card
@@ -60,28 +56,35 @@ const ProductCard = ({ item }: ProductCardProps) => {
           <Heart className="size-4 text-zinc-600 hover:text-red-500 transition-colors" />
         </button>
       </div>
-
-      <div className={cn("p-3", isOutOfStock && "opacity-60")}>
-        <div className="text-md font-semibold text-zinc-800 line-clamp-2 break-words mb-1">
+      <div className={cn("p-4", isOutOfStock && "opacity-60")}>
+        <div className="text-[13px] font-black text-zinc-900 uppercase tracking-tight line-clamp-2 leading-tight">
           {item.name}
         </div>
 
-        <div className="flex items-baseline justify-between gap-2">
-          <div className="text-base font-bold text-zinc-900">
-            <p>${currencyFormat(displayPrice)} ~</p>
-          </div>
+        <div className="mt-4">
+          {!isOutOfStock && (
+            <p className="text-[10px] font-black text-zinc-400 uppercase mb-1 ">
+              Starts from
+            </p>
+          )}
 
-          <div className="flex-shrink-0">
-            {totalStock > 0 && totalStock < 10 && (
-              <span className="text-[10px] text-white bg-primary px-1.5 py-1 rounded-sm font-semibold uppercase tracking-tight">
-                Only {totalStock} left
-              </span>
-            )}
-            {totalStock === 0 && (
-              <span className="text-[10px] text-zinc-750 font-medium border border-zinc-200 px-1.5 py-0.5 uppercase rounded-sm">
-                Out of Stock
-              </span>
-            )}
+          <div className="flex items-baseline justify-between gap-2">
+            <div className="text-base font-bold text-zinc-900 leading-none">
+              <p>${currencyFormat(displayPrice)}</p>
+            </div>
+
+            <div className="flex-shrink-0">
+              {totalStock > 0 && totalStock < 10 && (
+                <span className="text-[10px] text-white bg-primary px-1.5 py-1 rounded-sm font-semibold uppercase tracking-tight">
+                  Only {totalStock} left
+                </span>
+              )}
+              {isOutOfStock && (
+                <span className="text-[9px] text-red-600 font-bold border border-red-600 px-2 py-1 uppercase rounded-sm tracking-widest">
+                  Sold Out
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>

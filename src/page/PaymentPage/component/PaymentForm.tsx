@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import Cards from "react-credit-cards-2";
 import "react-credit-cards-2/dist/es/styles-compiled.css";
 
@@ -15,16 +16,26 @@ interface PaymentFormProps {
   handleInputFocus: (e: React.FocusEvent<HTMLInputElement>) => void;
   cardValue: PaymentCardValue;
   handlePaymentInfoChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  errors: Record<string, boolean>;
 }
 
 const PaymentForm = ({
   handleInputFocus,
   cardValue,
   handlePaymentInfoChange,
+  errors,
 }: PaymentFormProps) => {
+  const inputClass =
+    "w-full border border-gray-200 px-3 py-3 outline-none " +
+    "focus:border-primary transition-colors duration-300 ease-in-out " +
+    "text-xs font-bold uppercase placeholder:uppercase tracking-widest text-zinc-800";
+  const getBorderClass = (fieldName: string) =>
+    errors[fieldName]
+      ? "border-red-500 ring-1 ring-red-500"
+      : "border-zinc-200";
   return (
-    <div className="flex flex-col gap-6 md:flex-row">
-      <div className="w-full md:w-1/2">
+    <div className="flex flex-col gap-4 md:flex-row">
+      <div className="w-full md:w-1/2 flex flex-col items-center md:items-start">
         <Cards
           cvc={cardValue.cvc}
           expiry={cardValue.expiry}
@@ -33,7 +44,7 @@ const PaymentForm = ({
           number={cardValue.number}
         />
       </div>
-      <div className="form-area w-full md:w-1/2">
+      <div className="form-area w-full mt-3 gap-2 md:w-1/2 flex flex-col">
         <input
           type="tel"
           name="number"
@@ -41,10 +52,10 @@ const PaymentForm = ({
           onChange={handlePaymentInfoChange}
           onFocus={handleInputFocus}
           required
-          maxLength={16}
+          maxLength={19}
           minLength={16}
           value={cardValue.number}
-          className="mb-3 w-full rounded border border-gray-300 px-3 py-2"
+          className={cn(inputClass, getBorderClass("number"))}
         />
         <input
           type="text"
@@ -54,19 +65,19 @@ const PaymentForm = ({
           onFocus={handleInputFocus}
           required
           value={cardValue.name}
-          className="mb-3 w-full rounded border border-gray-300 px-3 py-2"
+          className={cn(inputClass, getBorderClass("name"))}
         />
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           <input
             type="text"
             name="expiry"
-            placeholder="MM/DD"
+            placeholder="MM/YY"
             onChange={handlePaymentInfoChange}
             onFocus={handleInputFocus}
             required
             value={cardValue.expiry}
             maxLength={7}
-            className="w-full rounded border border-gray-300 px-3 py-2"
+            className={cn(inputClass, getBorderClass("expiry"))}
           />
           <input
             type="text"
@@ -77,7 +88,7 @@ const PaymentForm = ({
             required
             maxLength={3}
             value={cardValue.cvc}
-            className="w-full rounded border border-gray-300 px-3 py-2"
+            className={cn(inputClass, getBorderClass("cvc"))}
           />
         </div>
       </div>

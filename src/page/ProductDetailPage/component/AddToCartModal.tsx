@@ -16,6 +16,7 @@ interface AddToCartModalProps {
   onClose: () => void;
   product: any;
   size: string;
+  qty: number;
   price: number;
 }
 
@@ -24,6 +25,7 @@ const AddToCartModal = ({
   onClose,
   product,
   size,
+  qty,
   price,
 }: AddToCartModalProps) => {
   const navigate = useNavigate();
@@ -87,8 +89,15 @@ const AddToCartModal = ({
                     <p className="text-[11px] font-bold text-zinc-400 uppercase">
                       SIZE: {size}
                     </p>
+                    <p className="text-[11px] font-bold text-zinc-400 uppercase ">
+                      Price: ${currencyFormat(price)}
+                    </p>
+                    <p className="text-[11px] font-bold text-zinc-400 uppercase">
+                      QTY: {qty}
+                    </p>
+
                     <p className="text-sm font-black text-zinc-900 mt-3">
-                      $ {currencyFormat(price)}
+                      Total: ${currencyFormat(price * qty)}
                     </p>
                   </div>
                 </div>

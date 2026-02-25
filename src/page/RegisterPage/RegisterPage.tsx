@@ -241,7 +241,7 @@ const RegisterPage = () => {
             </div>
           )}
           <form id="register-form" onSubmit={handleSubmit(onSubmit)}>
-            <div className="flex flex-col gap-4">
+            <div className="flex uppercase flex-col gap-4">
               <div className="grid gap-2">
                 {" "}
                 <Label htmlFor="email">
@@ -309,7 +309,7 @@ const RegisterPage = () => {
                           }
                         }}
                         className={cn(
-                          "w-full",
+                          "w-full uppercase",
                           errors.firstName && "border-red-500",
                           touchedFields.firstName &&
                             !errors.firstName &&
@@ -357,7 +357,7 @@ const RegisterPage = () => {
                           }
                         }}
                         className={cn(
-                          "w-full",
+                          "w-full uppercase",
                           errors.lastName && "border-red-500",
                           touchedFields.lastName &&
                             !errors.lastName &&
@@ -401,7 +401,7 @@ const RegisterPage = () => {
                           }}
                           onFocus={() => setPasswordFieldFocused(true)}
                           className={cn(
-                            "w-full pr-10",
+                            "w-full pr-10 uppercase",
                             errors.password && "border-red-500",
                             touchedFields.password &&
                               !errors.password &&
@@ -505,7 +505,7 @@ const RegisterPage = () => {
                           onChange={field.onChange}
                           onBlur={field.onBlur}
                           className={cn(
-                            "w-full pr-10",
+                            "w-full pr-10 uppercase",
                             errors.confirmPassword && "border-red-500",
                             touchedFields.confirmPassword &&
                               !errors.confirmPassword &&
@@ -576,7 +576,7 @@ const RegisterPage = () => {
               <Button
                 type="submit"
                 form="register-form"
-                className="w-full bg-[#F97316] hover:bg-[#ea580c] text-white"
+                className="w-full uppercase bg-[#F97316] hover:bg-[#ea580c] text-white"
                 disabled={!!loading}
               >
                 {loading ? (
@@ -592,7 +592,7 @@ const RegisterPage = () => {
           </form>
         </CardContent>
         <CardFooter className="flex flex-col items-center justify-center gap-2 pb-8">
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm uppercase text-muted-foreground">
             Already have an account?{" "}
             <Link
               to="/login"

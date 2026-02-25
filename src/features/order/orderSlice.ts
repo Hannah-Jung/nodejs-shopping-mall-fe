@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { AppDispatch } from "../store";
+import api from "@/utils/api";
+import { showToastMessage } from "../common/uiSlice";
 
 export interface OrderItem {
   productId: string;
@@ -39,13 +41,19 @@ const initialState: OrderState = {
 };
 
 export const createOrder = createAsyncThunk<
-  unknown,
+  string,
   Record<string, unknown>,
   { rejectValue: string; dispatch: AppDispatch }
->("order/createOrder", async (_payload, { dispatch, rejectWithValue }) => {
-  void dispatch;
-  void rejectWithValue;
-  return undefined;
+>("order/createOrder", async (payload, { dispatch, rejectWithValue }) => {
+  try {
+    const response = await api.post("/order", payload);
+    return response.data.orderNum;
+  } catch (error: any) {
+    const errorMessage =
+      error.response?.data?.message || error.message || "Order failed";
+    dispatch(showToastMessage({ message: errorMessage, status: "error" }));
+    return rejectWithValue(errorMessage);
+  }
 });
 
 export const getOrder = createAsyncThunk<
@@ -93,9 +101,25 @@ const orderSlice = createSlice({
     ) {
       state.selectedOrder = action.payload;
     },
+    resetOrderNum(state) {
+      state.orderNum = "";
+    },
   },
-  extraReducers: () => {},
+  extraReducers: (builder) => {
+    builder.addCase(createOrder.pending, (state, action) => {
+      state.loading = true;
+    });
+    builder.addCase(createOrder.fulfilled, (state, action) => {
+      state.loading = false;
+      state.error = "";
+      state.orderNum = action.payload;
+    });
+    builder.addCase(createOrder.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload || "An error occurred";
+    });
+  },
 });
 
-export const { setSelectedOrder } = orderSlice.actions;
+export const { setSelectedOrder, resetOrderNum } = orderSlice.actions;
 export default orderSlice.reducer;

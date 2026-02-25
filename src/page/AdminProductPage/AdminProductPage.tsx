@@ -53,7 +53,7 @@ const AdminProductPage = () => {
       navigate(queryString ? `?${queryString}` : "", { replace: true });
     }
 
-    dispatch(getProductList({ ...searchQuery, limit: "5" }));
+    dispatch(getProductList({ ...searchQuery, limit: "5", admin: "true" }));
   }, [dispatch, searchQuery.page, searchQuery.name, success]);
 
   useEffect(() => {
@@ -80,10 +80,17 @@ const AdminProductPage = () => {
             page: String(prevPage),
           }));
           dispatch(
-            getProductList({ ...searchQuery, page: prevPage, limit: "5" }),
+            getProductList({
+              ...searchQuery,
+              page: prevPage,
+              limit: "5",
+              admin: "true",
+            }),
           );
         } else {
-          dispatch(getProductList({ ...searchQuery, limit: "5" }));
+          dispatch(
+            getProductList({ ...searchQuery, limit: "5", admin: "true" }),
+          );
         }
       }
     });
@@ -111,7 +118,7 @@ const AdminProductPage = () => {
           <SearchBox
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
-            placeholder="Search by product name"
+            placeholder="SEARCH BY PRODUCT NAME"
             field="name"
           />
         </div>
@@ -121,7 +128,7 @@ const AdminProductPage = () => {
           onClick={handleClickNewItem}
         >
           <Plus className="size-5" strokeWidth={2} />
-          Add
+          ADD
         </Button>
 
         {productList.length > 0 ? (
@@ -173,7 +180,9 @@ const AdminProductPage = () => {
             if (mode === "new") {
               setSearchQuery((prev) => ({ ...prev, page: "1" }));
             } else {
-              dispatch(getProductList(searchQuery));
+              dispatch(
+                getProductList({ ...searchQuery, limit: "5", admin: "true" }),
+              );
             }
           }}
         />

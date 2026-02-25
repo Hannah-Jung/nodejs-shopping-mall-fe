@@ -112,7 +112,7 @@ const Navbar = ({ user }: NavbarProps) => {
             />
             <input
               type="text"
-              placeholder="Search"
+              placeholder="SEARCH"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className={`w-full bg-transparent text-sm outline-none ${
@@ -224,7 +224,7 @@ const Navbar = ({ user }: NavbarProps) => {
                 {user?.role === "admin" && (
                   <Link
                     to="/admin/dashboard"
-                    className="group flex min-h-[2.25rem] items-center gap-3 px-4 py-2 text-sm transition-colors duration-300 hover:bg-muted"
+                    className="group uppercase flex min-h-[2.25rem] items-center gap-3 px-4 py-2 text-sm transition-colors duration-300 hover:bg-muted"
                     onClick={() => setProfileOpen(false)}
                   >
                     <Settings className="size-4 shrink-0 text-muted-foreground transition-colors duration-300 group-hover:text-primary" />
@@ -234,7 +234,7 @@ const Navbar = ({ user }: NavbarProps) => {
                 <div className="border-t border-border" />
                 <Link
                   to="/account/purchase"
-                  className="group flex min-h-[2.25rem] items-center gap-3 px-4 py-2 text-sm transition-colors duration-300 hover:bg-muted"
+                  className="group uppercase flex min-h-[2.25rem] items-center gap-3 px-4 py-2 text-sm transition-colors duration-300 hover:bg-muted"
                   onClick={() => setProfileOpen(false)}
                 >
                   <UserIcon className="size-4 shrink-0 text-muted-foreground transition-colors duration-300 group-hover:text-primary" />
@@ -242,7 +242,7 @@ const Navbar = ({ user }: NavbarProps) => {
                 </Link>
                 <Link
                   to="/account/purchase"
-                  className="group flex min-h-[2.25rem] items-center gap-3 px-4 py-2 text-sm transition-colors duration-300 hover:bg-muted"
+                  className="group flex uppercase min-h-[2.25rem] items-center gap-3 px-4 py-2 text-sm transition-colors duration-300 hover:bg-muted"
                   onClick={() => setProfileOpen(false)}
                 >
                   <Package className="size-4 shrink-0 text-muted-foreground transition-colors duration-300 group-hover:text-primary" />
@@ -251,7 +251,7 @@ const Navbar = ({ user }: NavbarProps) => {
                 <div className="border-t border-border" />
                 <button
                   type="button"
-                  className="group flex w-full min-h-[2.25rem] cursor-pointer items-center gap-3 px-4 py-2 text-sm transition-colors duration-300 hover:bg-muted"
+                  className="group flex uppercase w-full min-h-[2.25rem] cursor-pointer items-center gap-3 px-4 py-2 text-sm transition-colors duration-300 hover:bg-muted"
                   onClick={handleLogout}
                 >
                   <LogOut className="size-4 shrink-0 text-muted-foreground transition-colors duration-300 group-hover:text-primary" />
@@ -262,14 +262,14 @@ const Navbar = ({ user }: NavbarProps) => {
               <>
                 <Link
                   to="/login"
-                  className="block px-4 py-2 text-sm hover:bg-muted"
+                  className="block uppercase px-4 py-2 text-sm hover:bg-muted"
                   onClick={() => setProfileOpen(false)}
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
-                  className="block px-4 py-2 text-sm hover:bg-muted"
+                  className="block uppercase px-4 py-2 text-sm hover:bg-muted"
                   onClick={() => setProfileOpen(false)}
                 >
                   Sign Up

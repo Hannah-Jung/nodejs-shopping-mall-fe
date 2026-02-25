@@ -15,6 +15,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import ConfirmModal from "@/common/component/ConfirmModal";
+import QtyStepper from "@/common/component/QtyStepper";
 
 export interface CartProductCardItem {
   _id: string;
@@ -40,6 +41,10 @@ const CartProductCard = ({ item }: CartProductCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const prices = item.productId.price as unknown as Record<string, number>;
   const currentPrice = prices[item.size.toLowerCase()] || 0;
+  const productStock = (item.productId as any).stock as Record<string, number>;
+  const actualStock = productStock?.[item.size.toLowerCase()] ?? 0;
+  const MAX_PURCHASE_LIMIT = 10;
+  const maxLimit = Math.min(actualStock, MAX_PURCHASE_LIMIT);
 
   return (
     <div className="flex flex-col sm:flex-row gap-6 p-6 bg-white border border-zinc-200 rounded-lg group transition-all hover:border-zinc-300">
@@ -57,10 +62,10 @@ const CartProductCard = ({ item }: CartProductCardProps) => {
             <h3 className="text-sm font-black text-zinc-800 uppercase leading-tight tracking-tight line-clamp-2">
               {item.productId.name}
             </h3>
-            <p className="text-[12px] font-bold text-zinc-500 mt-4 uppercase tracking-widest">
+            <p className="text-[12px] font-bold text-zinc-500 mt-3 uppercase tracking-widest">
               SIZE: {item.size}
             </p>
-            <p className="text-[12px] font-medium text-zinc-500 mt-1">
+            <p className="text-[12px] font-medium text-zinc-500 ">
               ${currencyFormat(currentPrice)}
             </p>
           </div>
@@ -68,33 +73,16 @@ const CartProductCard = ({ item }: CartProductCardProps) => {
 
         <div className="flex justify-between items-end mt-auto pt-2">
           <div className="flex items-center gap-3">
-            <div className="flex items-center border border-zinc-200 rounded-md overflow-hidden bg-zinc-50/50">
-              <button
-                onClick={() =>
-                  dispatch(updateQty({ id: item._id, value: item.qty - 1 }))
-                }
-                disabled={item.qty <= 1}
-                className="px-3 py-1 text-zinc-500 disabled:opacity-30 transition-colors cursor-pointer"
-              >
-                <Minus className="size-3" strokeWidth={3} />
-              </button>
-              <span className="w-8 text-center text-[14px] font-black font-mono text-zinc-900">
-                {item.qty}
-              </span>
-              <button
-                onClick={() =>
-                  dispatch(updateQty({ id: item._id, value: item.qty + 1 }))
-                }
-                className="px-3 py-2 text-zinc-500 transition-colors cursor-pointer"
-              >
-                <Plus className="size-3" strokeWidth={3} />
-              </button>
-            </div>
-
+            <QtyStepper
+              value={item.qty}
+              onChange={(newValue) =>
+                dispatch(updateQty({ id: item._id, value: newValue }))
+              }
+              max={maxLimit}
+            />
             <button
               onClick={() => setIsModalOpen(true)}
-              className="p-1.5 text-zinc-500 hover:text-red-500 hover:bg-red-50 rounded-md transition-all cursor-pointer"
-              title="Remove item"
+              className="px-4 pt-3 text-zinc-400 hover:text-red-500  rounded-md transition-all cursor-pointer"
             >
               <Trash2 className="size-4" />
             </button>
