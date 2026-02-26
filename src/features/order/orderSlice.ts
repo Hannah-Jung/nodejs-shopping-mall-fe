@@ -51,14 +51,6 @@ export const createOrder = createAsyncThunk<
 
     return response.data.orderNum;
   } catch (error: any) {
-    dispatch(
-      showToastMessage({
-        message: error.invalidItems
-          ? "Please check inventory issue"
-          : error.error || "Order failed",
-        status: "error",
-      }),
-    );
     return rejectWithValue(error);
   }
 });

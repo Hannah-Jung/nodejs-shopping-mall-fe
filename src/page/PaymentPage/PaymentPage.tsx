@@ -511,14 +511,15 @@ const PaymentPage = () => {
         title={
           allOutOfStock ? "ALL ITEMS OUT OF STOCK" : "STOCK UPDATE REQUIRED"
         }
-        confirmText={allOutOfStock ? "CONTINUE SHOPPING" : "UPDATE"}
-        cancelText={allOutOfStock ? "" : "CANCEL"}
+        confirmText={allOutOfStock ? "START OVER" : "UPDATE"}
+        cancelText="CANCEL"
         variant="danger"
         confirmButtonDisabled={
           !allOutOfStock && invalidItems.some((i) => i.actualStock === 0)
         }
         onConfirm={allOutOfStock ? handleContinueShopping : handleStockConfirm}
-        onClose={() => !allOutOfStock && setShowStockModal(false)}
+        // onClose={() => !allOutOfStock && setShowStockModal(false)}
+        onClose={() => setShowStockModal(false)}
         description={
           <div className="w-full space-y-6">
             <p className="text-xs text-zinc-500 text-center leading-relaxed">
@@ -574,11 +575,11 @@ const PaymentPage = () => {
                         <div className="flex items-center gap-3 mt-3">
                           {isItemOutOfStock ? (
                             <div className="flex items-center gap-2">
-                              <span className="text-[10px] font-black text-red-600 leading-tight uppercase">
+                              {/* <span className="text-[10px] font-black text-red-600 leading-tight uppercase">
                                 Item Unavailable
-                              </span>
+                              </span> */}
                               <span className="text-[9px] font-bold text-zinc-500 leading-tight uppercase">
-                                Please remove to proceed
+                                Please remove
                               </span>
                               <button
                                 type="button"
@@ -590,7 +591,7 @@ const PaymentPage = () => {
                             </div>
                           ) : (
                             <>
-                              <div className="flex items-center border border-zinc-200 bg-white px-2 py-1">
+                              {/* <div className="flex items-center border border-zinc-200 bg-white px-2 py-1">
                                 <button
                                   type="button"
                                   disabled={tempQtys[productId] <= 1}
@@ -622,7 +623,19 @@ const PaymentPage = () => {
                                 >
                                   +
                                 </button>
-                              </div>
+                              </div> */}
+                              <QtyStepper
+                                value={tempQtys[productId]}
+                                max={item.actualStock}
+                                showLabel={false}
+                                onChange={(newValue) =>
+                                  setTempQtys((p) => ({
+                                    ...p,
+                                    [productId]: newValue,
+                                  }))
+                                }
+                                className="scale-90 origin-left"
+                              />
                               <button
                                 type="button"
                                 onClick={() => handleDeleteItem(productId)}
@@ -640,9 +653,13 @@ const PaymentPage = () => {
               })}
               {allOutOfStock && (
                 <div className="text-center animate-in fade-in slide-in-from-bottom-2 duration-700">
-                  <p className="text-[10px] font-black text-zinc-400 uppercase tracking-tighter">
-                    [ Note ] <br />
-                    Clicking below will clear your current cart
+                  <p className="text-[11px] font-black text-zinc-400 uppercase tracking-tighter leading-tight">
+                    <p className="mb-1 text-zinc-500">[ NOTE ]</p>
+                    Pressing <span className="text-zinc-700">
+                      START OVER
+                    </span>{" "}
+                    will <br />
+                    clear your current cart
                   </p>
                 </div>
               )}
