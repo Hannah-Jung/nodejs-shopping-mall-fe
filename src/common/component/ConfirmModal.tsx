@@ -45,8 +45,8 @@ const ConfirmModal = ({
               exit={{ opacity: 0, scale: 0.95 }}
               className="p-8"
             >
-              <AlertDialogHeader className="flex flex-col items-center justify-center text-center">
-                <AlertDialogTitle className="text-lg font-black tracking-tight text-zinc-900 uppercase">
+              <AlertDialogHeader className="relative flex flex-col items-center justify-center text-center sm:text-center w-full !grid-cols-1">
+                <AlertDialogTitle className="text-lg font-black tracking-tight text-zinc-900 uppercase w-full block text-center !col-start-1">
                   {title}
                 </AlertDialogTitle>
 
