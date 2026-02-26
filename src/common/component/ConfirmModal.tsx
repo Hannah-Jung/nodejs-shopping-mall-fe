@@ -20,6 +20,7 @@ interface ConfirmModalProps {
   cancelText?: string;
   confirmText?: string;
   variant?: "danger" | "primary";
+  confirmButtonDisabled?: boolean;
 }
 
 const ConfirmModal = ({
@@ -31,6 +32,7 @@ const ConfirmModal = ({
   cancelText = "CANCEL",
   confirmText = "CONFIRM",
   variant = "primary",
+  confirmButtonDisabled = false,
 }: ConfirmModalProps) => {
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
@@ -61,6 +63,7 @@ const ConfirmModal = ({
                   {cancelText}
                 </AlertDialogCancel>
                 <AlertDialogAction
+                  disabled={confirmButtonDisabled}
                   onClick={onConfirm}
                   className={cn(
                     "h-12 flex-1 cursor-pointer font-bold uppercase tracking-widest text-white transition-all shadow-md active:scale-95",

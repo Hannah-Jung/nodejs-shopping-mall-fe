@@ -98,7 +98,11 @@ const AdminDashboardPage = () => {
           <Card className="h-full py-5 border-border bg-card hover:border-primary/50 hover:shadow-md transition-all duration-200 cursor-pointer">
             <CardHeader className="flex flex-row items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-none bg-primary/10 text-primary">
-                <ShoppingCart className="size-6" />
+                <ShoppingCart
+                  className="size-6"
+                  strokeLinecap="square"
+                  strokeLinejoin="miter"
+                />
               </div>
               <div>
                 <CardTitle className="text-lg">Order Management</CardTitle>

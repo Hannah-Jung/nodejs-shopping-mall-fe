@@ -152,7 +152,11 @@ const ProductDetail = () => {
             className="absolute top-4 right-4 z-10 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white shadow-sm transition-all"
             onClick={() => console.log("Wishlist toggle")}
           >
-            <Heart className="size-5 text-zinc-400 hover:text-red-500 transition-colors" />
+            <Heart
+              className="size-5 text-zinc-400 hover:text-red-500 transition-colors"
+              strokeLinecap="square"
+              strokeLinejoin="miter"
+            />
           </Button>
         </div>
         <div className="flex flex-col gap-1">

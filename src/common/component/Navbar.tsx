@@ -90,7 +90,12 @@ const Navbar = ({ user }: NavbarProps) => {
         className="flex items-center gap-2 font-medium text-xl cursor-pointer text-primary  transition-opacity"
         aria-label="PREPT"
       >
-        <Utensils className="size-5" strokeWidth={2} />
+        <Utensils
+          className="size-5"
+          strokeWidth={2}
+          strokeLinecap="square"
+          strokeLinejoin="miter"
+        />
         <span>PREPT</span>
       </Link>
 
@@ -151,7 +156,11 @@ const Navbar = ({ user }: NavbarProps) => {
           }`}
           aria-label="Wishlist"
         >
-          <Heart className={`size-5 ${isAdmin ? "text-white" : ""}`} />
+          <Heart
+            className={`size-5 ${isAdmin ? "text-white" : ""}`}
+            strokeLinecap="square"
+            strokeLinejoin="miter"
+          />
           {wishlistCount >= 1 && (
             <span
               className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground"
@@ -168,7 +177,11 @@ const Navbar = ({ user }: NavbarProps) => {
           }`}
           aria-label="Cart"
         >
-          <ShoppingCart className={`size-5 ${isAdmin ? "text-white" : ""}`} />
+          <ShoppingCart
+            className={`size-5 ${isAdmin ? "text-white" : ""}`}
+            strokeLinecap="square"
+            strokeLinejoin="miter"
+          />
 
           <AnimatePresence mode="popLayout">
             {cartItemCount >= 1 && (

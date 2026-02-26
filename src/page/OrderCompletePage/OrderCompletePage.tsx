@@ -32,7 +32,13 @@ const OrderCompletePage = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 py-20 text-center animate-in fade-in zoom-in duration-300">
       <div className="w-20 h-20 bg-zinc-100 rounded-full flex items-center justify-center mb-8">
-        <Check size={40} strokeWidth={3} className="text-black" />
+        <Check
+          size={40}
+          strokeWidth={3}
+          className="text-black"
+          strokeLinecap="square"
+          strokeLinejoin="miter"
+        />
       </div>
 
       <h2 className="text-4xl font-black uppercase tracking-tighter mb-2">

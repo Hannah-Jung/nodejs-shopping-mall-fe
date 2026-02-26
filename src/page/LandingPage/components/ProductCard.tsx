@@ -53,7 +53,11 @@ const ProductCard = ({ item }: ProductCardProps) => {
             e.stopPropagation();
           }}
         >
-          <Heart className="size-4 text-zinc-600 hover:text-red-500 transition-colors" />
+          <Heart
+            className="size-4 text-zinc-600 hover:text-red-500 transition-colors"
+            strokeLinecap="square"
+            strokeLinejoin="miter"
+          />
         </button>
       </div>
       <div className={cn("p-4", isOutOfStock && "opacity-60")}>

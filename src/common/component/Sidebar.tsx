@@ -78,7 +78,12 @@ const Sidebar = () => {
             id="offcanvasNavbarLabel-expand"
             className="font-semibold flex items-center gap-2 text-primary"
           >
-            <Utensils className="size-5" strokeWidth={2} />
+            <Utensils
+              className="size-5"
+              strokeWidth={2}
+              strokeLinecap="square"
+              strokeLinejoin="miter"
+            />
             PREPT
           </span>
           <button

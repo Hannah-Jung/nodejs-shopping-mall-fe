@@ -34,7 +34,11 @@ const CartPage = () => {
           ) : (
             <div className="flex flex-col items-center justify-center py-11.5 bg-zinc-50 rounded-2xl border-1 border border-zinc-200">
               <div className="bg-white p-4 rounded-full shadow-sm mb-6 border border-zinc-100">
-                <ShoppingCart className="size-8 text-zinc-400" />
+                <ShoppingCart
+                  className="size-8 text-zinc-400"
+                  strokeLinecap="square"
+                  strokeLinejoin="miter"
+                />
               </div>
 
               <p className="block sm:hidden uppercase text-sm text-zinc-500 mb-8 font-medium">

@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { AppDispatch } from "../store";
 import api from "@/utils/api";
 import { showToastMessage } from "../common/uiSlice";
+import { getCartQty } from "../cart/cartSlice";
 
 export interface OrderItem {
   productId: string;
@@ -47,12 +48,18 @@ export const createOrder = createAsyncThunk<
 >("order/createOrder", async (payload, { dispatch, rejectWithValue }) => {
   try {
     const response = await api.post("/order", payload);
+
     return response.data.orderNum;
   } catch (error: any) {
-    const errorMessage =
-      error.response?.data?.message || error.message || "Order failed";
-    dispatch(showToastMessage({ message: errorMessage, status: "error" }));
-    return rejectWithValue(errorMessage);
+    dispatch(
+      showToastMessage({
+        message: error.invalidItems
+          ? "Please check inventory issue"
+          : error.error || "Order failed",
+        status: "error",
+      }),
+    );
+    return rejectWithValue(error);
   }
 });
 

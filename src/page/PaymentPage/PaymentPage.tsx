@@ -19,6 +19,14 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Product } from "@/features/product/productSlice";
+import ConfirmModal from "@/common/component/ConfirmModal";
+import {
+  deleteCartItem,
+  getCartList,
+  updateQty,
+} from "@/features/cart/cartSlice";
+import QtyStepper from "@/common/component/QtyStepper";
+import { Trash2 } from "lucide-react";
 interface ShipInfo {
   firstName: string;
   lastName: string;
@@ -59,6 +67,9 @@ const PaymentPage = () => {
   const [shipInfo, setShipInfo] = useState<ShipInfo>(initialShipInfo);
   const { cartList, totalPrice } = useAppSelector((state) => state.cart);
   const [errors, setErrors] = useState<Record<string, boolean>>({});
+  const [showStockModal, setShowStockModal] = useState(false);
+  const [invalidItems, setInvalidItems] = useState<any[]>([]);
+  const [tempQtys, setTempQtys] = useState<Record<string, number>>({});
 
   useEffect(() => {
     dispatch(resetOrderNum());
@@ -70,37 +81,10 @@ const PaymentPage = () => {
       }
     }
   }, [location, navigate, cartList, orderNum]);
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const requiredFields = [
-      "firstName",
-      "lastName",
-      "contact",
-      "addressLine1",
-      "city",
-      "state",
-      "zipCode",
-    ];
-
     const newErrors: Record<string, boolean> = {};
-    requiredFields.forEach((field) => {
-      if (!shipInfo[field as keyof ShipInfo]?.trim()) {
-        newErrors[field] = true;
-      }
-    });
-
-    ["number", "name", "expiry", "cvc"].forEach((field) => {
-      if (!cardValue[field as keyof PaymentCardValue]?.trim()) {
-        newErrors[field] = true;
-      }
-    });
-
-    setErrors(newErrors);
-
-    if (Object.keys(newErrors).length > 0) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
 
     const {
       firstName,
@@ -113,8 +97,35 @@ const PaymentPage = () => {
       zipCode,
     } = shipInfo;
 
+    if (firstName.trim().length < 2) newErrors.firstName = true;
+    if (lastName.trim().length < 2) newErrors.lastName = true;
+    if (addressLine1.trim().length < 5) newErrors.addressLine1 = true;
+    if (city.trim().length < 2) newErrors.city = true;
+    if (!state) newErrors.state = true;
+
+    if (contact.length < 12) newErrors.contact = true;
+
+    if (zipCode.length < 5) newErrors.zipCode = true;
+
+    const { number, name, expiry, cvc } = cardValue;
+
+    if (number.replace(/\s/g, "").length < 16) newErrors.number = true;
+
+    if (name.trim().length < 2) newErrors.name = true;
+
+    if (expiry.length < 5) newErrors.expiry = true;
+
+    if (cvc.length < 3) newErrors.cvc = true;
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
     try {
-      const response = await dispatch(
+      const orderNum = await dispatch(
         createOrder({
           totalPrice,
           shipTo: {
@@ -137,11 +148,99 @@ const PaymentPage = () => {
           }),
         }),
       ).unwrap();
-      if (response) {
-        navigate("/payment/success", { replace: true });
+      if (orderNum) {
+        navigate("/payment/success", { replace: true, state: { orderNum } });
       }
-    } catch (error) {
-      console.error("Order process error:", error);
+    } catch (error: any) {
+      console.error("Check Error Data:", error);
+      if (error.errorType === "INSUFFICIENT_STOCK" || error.invalidItems) {
+        setInvalidItems(error.invalidItems || []);
+        const initialQtys: Record<string, number> = {};
+        error.invalidItems.forEach((item: any) => {
+          initialQtys[item.productId] = item.actualStock;
+        });
+        setTempQtys(initialQtys);
+        setShowStockModal(true);
+      }
+    }
+  };
+
+  const handleStockConfirm = async () => {
+    try {
+      await Promise.all(
+        invalidItems.map((item) => {
+          const cartItem = cartList.find(
+            (c: any) =>
+              c.productId._id === item.productId && c.size === item.size,
+          );
+
+          if (cartItem && cartItem._id) {
+            return dispatch(
+              updateQty({
+                id: cartItem._id as string,
+                value: tempQtys[item.productId],
+              }),
+            ).unwrap();
+          }
+          return Promise.resolve();
+        }),
+      );
+
+      await dispatch(getCartList()).unwrap();
+      setShowStockModal(false);
+    } catch (e) {
+      console.error("Update failed", e);
+    }
+  };
+
+  const handleDeleteItem = async (productId: string) => {
+    try {
+      const cartItem = cartList.find((c: any) => c.productId._id === productId);
+      if (cartItem && cartItem._id) {
+        await dispatch(deleteCartItem(cartItem._id as string)).unwrap();
+        const updatedCart = await dispatch(getCartList()).unwrap();
+
+        const remainingInvalid = invalidItems.filter(
+          (item) => item.productId !== productId,
+        );
+        setInvalidItems(remainingInvalid);
+
+        if (remainingInvalid.length === 0) {
+          setShowStockModal(false);
+        } else if (updatedCart.length === 0) {
+          setShowStockModal(false);
+          navigate("/", { replace: true });
+        }
+      }
+    } catch (e) {
+      console.error("Delete failed", e);
+    }
+  };
+
+  const allOutOfStock =
+    cartList.length > 0 &&
+    cartList.every((cartItem: any) =>
+      invalidItems.some(
+        (invalid) =>
+          invalid.productId ===
+            (cartItem.productId?._id || cartItem.productId) &&
+          invalid.actualStock === 0,
+      ),
+    );
+
+  const handleContinueShopping = async () => {
+    try {
+      await Promise.all(
+        cartList.map((item: any) =>
+          dispatch(deleteCartItem(item._id)).unwrap(),
+        ),
+      );
+      await dispatch(getCartList()).unwrap();
+
+      setShowStockModal(false);
+      navigate("/", { replace: true });
+    } catch (e) {
+      console.error("Failed to clear cart", e);
     }
   };
 
@@ -173,7 +272,12 @@ const PaymentPage = () => {
     let cleanedValue = value;
 
     if (name === "name") {
-      cleanedValue = value.replace(/[^a-zA-Z\s]/g, "").toUpperCase();
+      cleanedValue = value.replace(
+        /[0-9!@#$%^&*()_+={}\[\]:;"'<>,.?/\\|`~]/g,
+        "",
+      );
+
+      cleanedValue = cleanedValue.toUpperCase();
     }
     if (name === "number" || name === "cvc") {
       cleanedValue = value.replace(/\D/g, "");
@@ -204,6 +308,12 @@ const PaymentPage = () => {
     errors[fieldName]
       ? "border-red-500 ring-1 ring-red-500"
       : "border-zinc-200";
+
+  const ErrorField = ({ message }: { message: string }) => (
+    <p className="text-[10px] text-red-500 font-semibold uppercase pl-1 mt-1 animate-in fade-in slide-in-from-top-1 duration-200">
+      {message}
+    </p>
+  );
   return (
     <div className="mx-auto max-w-6xl lg:px-16 px-4 py-12">
       <h1 className="text-2xl font-black mb-10 tracking-tight uppercase">
@@ -219,59 +329,78 @@ const PaymentPage = () => {
             <h2 className="text-xl font-bold mb-6 uppercase tracking-tight">
               Shipping Address
             </h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <input
-                type="text"
-                name="firstName"
-                placeholder="First Name"
-                onChange={handleFormChange}
-                required
-                className={cn(inputClass, getBorderClass("firstName"))}
-                value={shipInfo.firstName}
-              />
-              <input
-                type="text"
-                name="lastName"
-                placeholder="Last Name"
-                onChange={handleFormChange}
-                required
-                className={cn(inputClass, getBorderClass("lastName"))}
-                value={shipInfo.lastName}
-              />
-              <input
-                type="tel"
-                name="contact"
-                placeholder="Contact Number"
-                maxLength={12}
-                onChange={handleFormChange}
-                required
-                className={cn(inputClass, getBorderClass("contact"))}
-                value={shipInfo.contact}
-              />
-              <input
-                type="text"
-                name="addressLine1"
-                placeholder="Address Line 1"
-                onChange={handleFormChange}
-                required
-                className={cn(inputClass, getBorderClass("addressLine1"))}
-              />
-              <input
-                type="text"
-                name="addressLine2"
-                placeholder="Address Line 2 (optional)"
-                onChange={handleFormChange}
-                className={inputClass}
-              />
-              <input
-                type="text"
-                name="city"
-                placeholder="City"
-                onChange={handleFormChange}
-                required
-                className={cn(inputClass, getBorderClass("city"))}
-                value={shipInfo.city}
-              />
+            <div className="grid grid-cols-1 gap-x-5 gap-y-5 sm:grid-cols-2">
+              <div className="flex flex-col">
+                <input
+                  type="text"
+                  name="firstName"
+                  placeholder="First Name"
+                  onChange={handleFormChange}
+                  required
+                  className={cn(inputClass, getBorderClass("firstName"))}
+                  value={shipInfo.firstName}
+                />
+                {errors.firstName && (
+                  <ErrorField message="First name must be at least 2 characters" />
+                )}
+              </div>
+
+              <div className="flex flex-col">
+                <input
+                  type="text"
+                  name="lastName"
+                  placeholder="Last Name"
+                  onChange={handleFormChange}
+                  required
+                  className={cn(inputClass, getBorderClass("lastName"))}
+                  value={shipInfo.lastName}
+                />
+                {errors.lastName && (
+                  <ErrorField message="Last name must be at least 2 characters" />
+                )}
+              </div>
+
+              <div className="flex flex-col">
+                <input
+                  type="text"
+                  name="addressLine1"
+                  placeholder="Address Line 1"
+                  onChange={handleFormChange}
+                  required
+                  className={cn(inputClass, getBorderClass("addressLine1"))}
+                  value={shipInfo.addressLine1}
+                />
+                {errors.addressLine1 && (
+                  <ErrorField message="Address must be at least 5 characters" />
+                )}
+              </div>
+
+              <div className="flex flex-col">
+                <input
+                  type="text"
+                  name="addressLine2"
+                  placeholder="Address Line 2 (optional)"
+                  onChange={handleFormChange}
+                  className={inputClass}
+                  value={shipInfo.addressLine2}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <input
+                  type="text"
+                  name="city"
+                  placeholder="City"
+                  onChange={handleFormChange}
+                  required
+                  className={cn(inputClass, getBorderClass("city"))}
+                  value={shipInfo.city}
+                />
+                {errors.city && (
+                  <ErrorField message="City must be at least 2 characters" />
+                )}
+              </div>
+
               <div className="flex flex-col">
                 <Select
                   onValueChange={(value) => {
@@ -285,7 +414,7 @@ const PaymentPage = () => {
                   <SelectTrigger
                     className={cn(
                       inputClass,
-                      "h-auto min-h-[48px] py-0 flex items-center justify-between",
+                      "h-auto min-h-[48px]",
                       getBorderClass("state"),
                     )}
                   >
@@ -300,17 +429,16 @@ const PaymentPage = () => {
                       <SelectValue placeholder="STATE" />
                     </span>
                   </SelectTrigger>
-
                   <SelectContent
+                    className="bg-white border border-zinc-200 shadow-xl overflow-y-auto max-h-[300px]"
                     position="popper"
                     sideOffset={5}
-                    className="max-h-[300px] bg-white border border-zinc-200 shadow-xl overflow-y-auto"
                   >
-                    {US_STATES.map((state: { code: string; name: string }) => (
+                    {US_STATES.map((state) => (
                       <SelectItem
                         key={state.code}
                         value={state.code}
-                        className="cursor-pointer text-xs font-black uppercase hover:bg-zinc-50 py-3"
+                        className="cursor-pointer text-xs font-black uppercase py-3"
                       >
                         {state.code} — {state.name}
                       </SelectItem>
@@ -318,21 +446,41 @@ const PaymentPage = () => {
                   </SelectContent>
                 </Select>
                 {errors.state && (
-                  <p className="text-[10px] text-red-500 font-bold uppercase pl-1">
-                    Please select your state
-                  </p>
+                  <ErrorField message="Please select your state" />
                 )}
               </div>
-              <input
-                type="text"
-                name="zipCode"
-                placeholder="Zip Code"
-                maxLength={5}
-                onChange={handleFormChange}
-                required
-                className={cn(inputClass, getBorderClass("zipCode"))}
-                value={shipInfo.zipCode}
-              />
+
+              <div className="flex flex-col">
+                <input
+                  type="text"
+                  name="zipCode"
+                  placeholder="Zip Code"
+                  maxLength={5}
+                  onChange={handleFormChange}
+                  required
+                  className={cn(inputClass, getBorderClass("zipCode"))}
+                  value={shipInfo.zipCode}
+                />
+                {errors.zipCode && (
+                  <ErrorField message="Zip code must be 5 digits" />
+                )}
+              </div>
+
+              <div className="flex flex-col">
+                <input
+                  type="tel"
+                  name="contact"
+                  placeholder="Contact Number"
+                  maxLength={12}
+                  onChange={handleFormChange}
+                  required
+                  className={cn(inputClass, getBorderClass("contact"))}
+                  value={shipInfo.contact}
+                />
+                {errors.contact && (
+                  <ErrorField message="Enter a valid phone number (12 digits)" />
+                )}
+              </div>
             </div>
           </section>
 
@@ -351,9 +499,157 @@ const PaymentPage = () => {
 
         <aside className="lg:col-span-4 sticky top-24">
           <div className="hidden lg:block h-[28px] mb-6" aria-hidden="true" />
-          <OrderReceipt cartList={cartList} totalPrice={totalPrice} />
+          <OrderReceipt
+            key={totalPrice}
+            cartList={cartList}
+            totalPrice={totalPrice}
+          />
         </aside>
       </form>
+      <ConfirmModal
+        isOpen={showStockModal}
+        title={
+          allOutOfStock ? "ALL ITEMS OUT OF STOCK" : "STOCK UPDATE REQUIRED"
+        }
+        confirmText={allOutOfStock ? "CONTINUE SHOPPING" : "UPDATE"}
+        cancelText={allOutOfStock ? "" : "CANCEL"}
+        variant="danger"
+        confirmButtonDisabled={
+          !allOutOfStock && invalidItems.some((i) => i.actualStock === 0)
+        }
+        onConfirm={allOutOfStock ? handleContinueShopping : handleStockConfirm}
+        onClose={() => !allOutOfStock && setShowStockModal(false)}
+        description={
+          <div className="w-full space-y-6">
+            <p className="text-xs text-zinc-500 text-center leading-relaxed">
+              {allOutOfStock
+                ? "We're sorry, all items in your cart are sold out. Please explore our other products."
+                : "Some items are low on stock. Please adjust quantities or remove items."}
+            </p>
+
+            <div className="space-y-4 border-zinc-100 pt-2 max-h-[400px] overflow-y-auto pr-1">
+              {invalidItems.map((item, index) => {
+                const productId = item.productId;
+                const isItemOutOfStock = item.actualStock === 0;
+
+                const currentCartItem = cartList.find(
+                  (c: any) =>
+                    (c.productId?._id || c.productId) === productId &&
+                    c.size === item.size,
+                );
+                const requestedQty = currentCartItem?.qty || "?";
+
+                return (
+                  <div
+                    key={index}
+                    className="flex gap-2 p-2 bg-zinc-100/50 rounded-sm mb-4"
+                  >
+                    <div className="size-18 bg-white border border-zinc-200 shrink-0 flex items-center justify-center overflow-hidden">
+                      <img
+                        src={item.image}
+                        alt={item.productName}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex flex-col flex-1 text-left justify-center min-w-0">
+                      <h3 className="text-[11px] font-black text-zinc-800 uppercase leading-tight line-clamp-2">
+                        {item.productName}
+                      </h3>
+                      <div className="mt-1 space-y-0.5">
+                        <p className="text-[10px] font-bold text-zinc-400 uppercase">
+                          SIZE: {item.size}
+                        </p>
+                        <p className="text-[10px] font-bold text-zinc-400 uppercase">
+                          QTY: {requestedQty}
+                        </p>
+                        <p className="text-[10px] font-bold text-zinc-400 uppercase">
+                          STOCK:{" "}
+                          <span className="text-red-600">
+                            {isItemOutOfStock ? "SOLD OUT" : item.actualStock}
+                          </span>
+                        </p>
+                      </div>
+
+                      {!allOutOfStock && (
+                        <div className="flex items-center gap-3 mt-3">
+                          {isItemOutOfStock ? (
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-black text-red-600 leading-tight uppercase">
+                                Item Unavailable
+                              </span>
+                              <span className="text-[9px] font-bold text-zinc-500 leading-tight uppercase">
+                                Please remove to proceed
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteItem(productId)}
+                                className="text-red-500 hover:bg-zinc-500 p-1 rounded-full"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="flex items-center border border-zinc-200 bg-white px-2 py-1">
+                                <button
+                                  type="button"
+                                  disabled={tempQtys[productId] <= 1}
+                                  onClick={() =>
+                                    setTempQtys((p) => ({
+                                      ...p,
+                                      [productId]: p[productId] - 1,
+                                    }))
+                                  }
+                                  className="px-2 text-zinc-400 disabled:opacity-20"
+                                >
+                                  -
+                                </button>
+                                <span className="w-8 text-center text-xs font-black">
+                                  {tempQtys[productId]}
+                                </span>
+                                <button
+                                  type="button"
+                                  disabled={
+                                    tempQtys[productId] >= item.actualStock
+                                  }
+                                  onClick={() =>
+                                    setTempQtys((p) => ({
+                                      ...p,
+                                      [productId]: p[productId] + 1,
+                                    }))
+                                  }
+                                  className="px-2 text-zinc-400 disabled:opacity-20"
+                                >
+                                  +
+                                </button>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteItem(productId)}
+                                className="text-zinc-300 hover:text-red-600 p-1"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+              {allOutOfStock && (
+                <div className="text-center animate-in fade-in slide-in-from-bottom-2 duration-700">
+                  <p className="text-[10px] font-black text-zinc-400 uppercase tracking-tighter">
+                    [ Note ] <br />
+                    Clicking below will clear your current cart
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        }
+      />
     </div>
   );
 };

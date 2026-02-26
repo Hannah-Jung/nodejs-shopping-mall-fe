@@ -43,7 +43,9 @@ const OrderReceipt = ({
       {isPaymentPage && (
         <div className="mb-6 space-y-3 border-b border-zinc-100 pb-6">
           {cartList.map((item) => {
-            const unitPrice = item.productId.price[item.size];
+            const product = item.productId;
+            if (!product || typeof product === "string") return null;
+            const unitPrice = product.price ? product.price[item.size] : 0;
             return (
               <div key={item._id} className="flex gap-3">
                 <div className="size-12 bg-zinc-100 shrink-0 rounded overflow-hidden">
@@ -139,7 +141,7 @@ const OrderReceipt = ({
         onClick={isPaymentPage ? undefined : handleCheckout}
         disabled={!cartList || cartList.length === 0}
         className={cn(
-          "w-full mt-8 py-4 rounded-md font-black text-xs uppercase tracking-widest transition-all",
+          "w-full mt-8 py-4 rounded-md font-black text-xs uppercase tracking-widest duration-500 transition-all",
           !cartList || cartList.length === 0
             ? "bg-zinc-100 text-zinc-400 cursor-not-allowed"
             : "bg-zinc-900 text-white hover:bg-primary cursor-pointer",
