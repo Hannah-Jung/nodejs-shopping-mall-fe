@@ -524,8 +524,8 @@ const PaymentPage = () => {
           <div className="w-full space-y-6">
             <p className="text-xs text-zinc-500 text-center leading-relaxed">
               {allOutOfStock
-                ? "We're sorry, all items in your cart are sold out. Please explore our other products."
-                : "Some items are low on stock. Please adjust quantities or remove items."}
+                ? "Items in your cart are no longer available. Please explore our other products."
+                : "Please adjust quantities or remove items to continue"}
             </p>
 
             <div className="space-y-4 border-zinc-100 pt-2 max-h-[400px] overflow-y-auto pr-1">
