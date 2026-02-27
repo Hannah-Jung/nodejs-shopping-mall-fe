@@ -240,29 +240,24 @@ const ProductTable = ({
 
                   <td className="block sm:table-cell p-4 pt-0 sm:py-4">
                     <div className="flex gap-2 justify-end sm:justify-center border-t sm:border-0 pt-3 sm:pt-0">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-10 flex-1 sm:flex-none sm:h-9 sm:w-9 p-0 hover:text-primary transition-all cursor-pointer bg-white"
+                      <button
+                        className="h-10 flex-1 sm:flex-none sm:h-9 sm:w-9 flex items-center justify-center text-zinc-400 hover:text-primary transition-colors cursor-pointer"
                         onClick={() => openEditForm(product)}
                       >
-                        <SquarePen className="size-4 mr-2 sm:mr-0" />
-                        <span className="sm:hidden text-xs font-bold">
-                          EDIT
+                        <SquarePen className="size-4 sm:size-5" />
+                        <span className="sm:hidden ml-2 text-xs font-bold uppercase">
+                          Edit
                         </span>
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-10 flex-1 sm:flex-none sm:h-9 sm:w-9 p-0 hover:text-red-500 transition-all cursor-pointer bg-white"
+                      </button>
+                      <button
+                        className="h-10 flex-1 sm:flex-none sm:h-9 sm:w-9 flex items-center justify-center text-zinc-400 hover:text-red-500 transition-colors cursor-pointer"
                         onClick={() => openDeleteModal(product)}
                       >
-                        <Trash2 className="size-4 mr-2 sm:mr-0" />
-                        <span className="sm:hidden text-xs font-bold">
-                          DELETE
+                        <Trash2 className="size-4 sm:size-5" />
+                        <span className="sm:hidden ml-2 text-xs font-bold uppercase">
+                          Delete
                         </span>
-                      </Button>
+                      </button>
                     </div>
                   </td>
                 </tr>

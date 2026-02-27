@@ -9,7 +9,7 @@ interface SearchBoxProps {
   field: string;
 }
 
-const SearchBox = ({ placeholder, field }: SearchBoxProps) => {
+const SearchBox = ({ placeholder, field, setSearchQuery }: SearchBoxProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [keyword, setKeyword] = useState(searchParams.get(field) ?? "");
 
@@ -26,6 +26,12 @@ const SearchBox = ({ placeholder, field }: SearchBoxProps) => {
     }
     params.set("page", "1");
     setSearchParams(params);
+
+    setSearchQuery((prev: Record<string, string>) => ({
+      ...prev,
+      [field]: value,
+      page: "1",
+    }));
   };
 
   const onCheckEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {

@@ -9,101 +9,116 @@ import {
   getOrderList,
   setSelectedOrder,
 } from "../../features/order/orderSlice";
-import "./style/adminOrder.style.css";
 import { useAppDispatch, useAppSelector } from "../../features/hooks";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const tableHeader = [
   "#",
   "Order#",
   "Order Date",
-  "User",
   "Order Item",
-  "Address",
   "Total Price",
   "Status",
+  "Action",
 ];
 
 const AdminOrderPage = () => {
   const navigate = useNavigate();
   const [query] = useSearchParams();
   const dispatch = useAppDispatch();
-  const { orderList, totalPageNum } = useAppSelector((state) => state.order);
-  const [searchQuery, setSearchQuery] = useState<Record<string, unknown>>({
-    page: Number(query.get("page")) || 1,
-    ordernum: query.get("ordernum") ?? "",
-  });
+  const { orderList, totalPageNum, totalCount } = useAppSelector(
+    (state) => state.order,
+  );
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    dispatch(getOrderList({ ...searchQuery }));
-  }, [query, dispatch, searchQuery]);
+  const [searchQuery, setSearchQuery] = useState<Record<string, string>>({
+    page: query.get("page") || "1",
+    ordernum: query.get("ordernum") ?? "",
+  });
 
   useEffect(() => {
-    const q: Record<string, string | number> = { ...searchQuery } as Record<
-      string,
-      string | number
-    >;
-    if (q.ordernum === "") delete q.ordernum;
-    const params = new URLSearchParams(
-      Object.fromEntries(Object.entries(q).map(([k, v]) => [k, String(v)])),
+    dispatch(
+      getOrderList({
+        ...searchQuery,
+        page: Number(searchQuery.page),
+        limit: "5",
+      }),
     );
-    navigate("?" + params.toString());
-  }, [searchQuery, navigate]);
+
+    const params = new URLSearchParams();
+    if (Number(searchQuery.page) > 1) params.set("page", searchQuery.page);
+    if (searchQuery.ordernum) params.set("ordernum", searchQuery.ordernum);
+
+    navigate("?" + params.toString(), { replace: true });
+  }, [dispatch, searchQuery, navigate]);
 
   const openEditForm = (order: OrderTableOrder) => {
     setOpen(true);
-    dispatch(setSelectedOrder(order as unknown as Record<string, unknown>));
+    dispatch(setSelectedOrder(order as any));
   };
 
   const handlePageClick = ({ selected }: { selected: number }) => {
-    setSearchQuery((prev) => ({ ...prev, page: selected + 1 }));
-  };
-
-  const handleClose = () => {
-    setOpen(false);
+    setSearchQuery((prev) => ({ ...prev, page: String(selected + 1) }));
+    window.scrollTo(0, 0);
   };
 
   return (
-    <div className="locate-center">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="mt-2 display-center mb-2">
-          <SearchBox
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            placeholder="Order Number"
-            field="ordernum"
+    <div className="py-10">
+      <div className="max-w-7xl mx-auto px-4">
+        <h1 className="text-2xl font-black mb-8 uppercase tracking-tight">
+          Order Management
+        </h1>
+
+        <div className="mb-6 flex justify-start">
+          <div className="w-full w-full">
+            <SearchBox
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              placeholder="SEARCH BY ORDER #"
+              field="ordernum"
+            />
+          </div>
+        </div>
+
+        <div className="bg-white border border-zinc-200 rounded-sm overflow-hidden mb-8">
+          <OrderTable
+            header={tableHeader}
+            data={orderList as unknown as OrderTableOrder[]}
+            openEditForm={openEditForm}
+            currentPage={Number(searchQuery.page)}
           />
         </div>
 
-        <OrderTable
-          header={tableHeader}
-          data={orderList as unknown as OrderTableOrder[]}
-          openEditForm={openEditForm}
-        />
         <ReactPaginate
-          nextLabel="next >"
+          nextLabel={<ChevronRight className="size-4" />}
           onPageChange={handlePageClick}
+          marginPagesDisplayed={0}
           pageRangeDisplayed={5}
           pageCount={Math.max(1, totalPageNum)}
-          forcePage={Number(searchQuery.page) - 1 || 0}
-          previousLabel="< previous"
+          forcePage={Number(searchQuery.page) - 1}
+          previousLabel={<ChevronLeft className="size-4" />}
           renderOnZeroPageCount={null}
-          pageClassName="page-item"
-          pageLinkClassName="page-link"
-          previousClassName="page-item"
-          previousLinkClassName="page-link"
-          nextClassName="page-item"
-          nextLinkClassName="page-link"
-          breakLabel="..."
-          breakClassName="page-item"
-          breakLinkClassName="page-link"
-          containerClassName="pagination"
-          activeClassName="Active"
-          className="display-center list-style-none"
+          containerClassName="pagination flex justify-center items-center gap-2 mt-12 list-none select-none"
+          pageClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
+          pageLinkClassName="page-link px-4 py-2 block hover:bg-zinc-100 cursor-pointer transition-colors text-sm font-bold"
+          previousClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
+          previousLinkClassName="page-link px-3 py-2 block hover:bg-zinc-100 cursor-pointer"
+          nextClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
+          nextLinkClassName="page-link px-3 py-2 block hover:bg-zinc-100 cursor-pointer"
+          activeClassName="Active bg-primary border-primary text-white"
+          breakClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
+          breakLinkClassName="page-link px-4 py-2 block"
+          activeLinkClassName="!bg-primary !hover:bg-primary text-white cursor-default"
         />
       </div>
 
-      {open && <OrderDetailDialog open={open} handleClose={handleClose} />}
+      {open && (
+        <OrderDetailDialog
+          open={open}
+          handleClose={() => setOpen(false)}
+          isAdmin={true}
+        />
+      )}
     </div>
   );
 };

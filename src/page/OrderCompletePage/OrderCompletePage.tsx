@@ -13,9 +13,13 @@ const OrderCompletePage = () => {
             size={40}
             strokeWidth={2}
             className="text-black mb-1"
+            strokeLinecap="square"
+            strokeLinejoin="miter"
           />
         </div>
-        <h1 className="text-2xl font-black uppercase mb-4">No Order Found</h1>
+        <h1 className="text-2xl font-black uppercase mb-4 text-center">
+          No Order Found
+        </h1>
         <p className="text-zinc-500 mb-8 uppercase">
           Looks like there's no order
         </p>

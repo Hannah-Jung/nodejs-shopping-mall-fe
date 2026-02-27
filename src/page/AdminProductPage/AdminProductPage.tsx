@@ -112,8 +112,11 @@ const AdminProductPage = () => {
   };
 
   return (
-    <div className="locate-center">
-      <div className="max-w-6xl mx-auto px-4">
+    <div className="py-10">
+      <div className="max-w-7xl mx-auto px-4">
+        <h1 className="text-2xl font-black mb-8 uppercase tracking-tight">
+          Product Management
+        </h1>
         <div className="mt-2">
           <SearchBox
             searchQuery={searchQuery}
@@ -151,7 +154,7 @@ const AdminProductPage = () => {
               renderOnZeroPageCount={null}
               containerClassName="pagination flex justify-center items-center gap-2 mt-8 list-none select-none"
               pageClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
-              pageLinkClassName="page-link px-4 py-2 block hover:bg-zinc-100 cursor-pointer transition-colors text-sm"
+              pageLinkClassName="page-link px-4 py-2 block hover:bg-zinc-100 cursor-pointer transition-colors text-sm  font-bold"
               previousClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
               previousLinkClassName="page-link px-3 py-2 block hover:bg-zinc-100 cursor-pointer text-sm"
               nextClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
@@ -159,7 +162,7 @@ const AdminProductPage = () => {
               breakLabel="..."
               breakClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
               breakLinkClassName="page-link px-4 py-2 block"
-              activeClassName="Active bg-zinc-900 border-zinc-900 text-white"
+              activeLinkClassName="!bg-primary !hover:bg-primary text-white cursor-default"
             />
           </>
         ) : (

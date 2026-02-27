@@ -518,7 +518,6 @@ const PaymentPage = () => {
           !allOutOfStock && invalidItems.some((i) => i.actualStock === 0)
         }
         onConfirm={allOutOfStock ? handleContinueShopping : handleStockConfirm}
-        // onClose={() => !allOutOfStock && setShowStockModal(false)}
         onClose={() => setShowStockModal(false)}
         description={
           <div className="w-full space-y-6">
@@ -575,9 +574,6 @@ const PaymentPage = () => {
                         <div className="flex items-center gap-3 mt-3">
                           {isItemOutOfStock ? (
                             <div className="flex items-center gap-2">
-                              {/* <span className="text-[10px] font-black text-red-600 leading-tight uppercase">
-                                Item Unavailable
-                              </span> */}
                               <span className="text-[9px] font-bold text-zinc-500 leading-tight uppercase">
                                 Please remove
                               </span>
@@ -591,39 +587,6 @@ const PaymentPage = () => {
                             </div>
                           ) : (
                             <>
-                              {/* <div className="flex items-center border border-zinc-200 bg-white px-2 py-1">
-                                <button
-                                  type="button"
-                                  disabled={tempQtys[productId] <= 1}
-                                  onClick={() =>
-                                    setTempQtys((p) => ({
-                                      ...p,
-                                      [productId]: p[productId] - 1,
-                                    }))
-                                  }
-                                  className="px-2 text-zinc-400 disabled:opacity-20"
-                                >
-                                  -
-                                </button>
-                                <span className="w-8 text-center text-xs font-black">
-                                  {tempQtys[productId]}
-                                </span>
-                                <button
-                                  type="button"
-                                  disabled={
-                                    tempQtys[productId] >= item.actualStock
-                                  }
-                                  onClick={() =>
-                                    setTempQtys((p) => ({
-                                      ...p,
-                                      [productId]: p[productId] + 1,
-                                    }))
-                                  }
-                                  className="px-2 text-zinc-400 disabled:opacity-20"
-                                >
-                                  +
-                                </button>
-                              </div> */}
                               <QtyStepper
                                 value={tempQtys[productId]}
                                 max={item.actualStock}

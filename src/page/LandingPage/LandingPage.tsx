@@ -78,7 +78,7 @@ const LandingPage = () => {
                   renderOnZeroPageCount={null}
                   containerClassName="pagination flex justify-center items-center gap-2 list-none select-none"
                   pageClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
-                  pageLinkClassName="page-link px-4 py-2 block hover:bg-zinc-100 cursor-pointer transition-colors text-sm"
+                  pageLinkClassName="page-link px-4 py-2 block hover:bg-zinc-100 cursor-pointer transition-colors text-sm  font-bold"
                   previousClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
                   previousLinkClassName="page-link px-3 py-2 block hover:bg-zinc-100 cursor-pointer text-sm"
                   nextClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
@@ -86,7 +86,7 @@ const LandingPage = () => {
                   breakLabel="..."
                   breakClassName="page-item border border-zinc-200 rounded-md overflow-hidden"
                   breakLinkClassName="page-link px-4 py-2 block"
-                  activeLinkClassName="!bg-orange-500 !border-orange-500 !text-white"
+                  activeLinkClassName="!bg-orange-500 !border-orange-500 !text-white cursor-default"
                   activeClassName="active bg-orange-500 border-orange-500 text-white"
                 />
               </div>
