@@ -4,7 +4,10 @@ import { Button } from "@/components/ui/button";
 import { ColorRing } from "react-loader-spinner";
 import { currencyFormat } from "../../utils/number";
 import "./style/productDetail.style.css";
-import { getProductDetail } from "../../features/product/productSlice";
+import {
+  getProductDetail,
+  setSelectedProduct,
+} from "../../features/product/productSlice";
 import { useAppDispatch, useAppSelector } from "../../features/hooks";
 import {
   Select,
@@ -61,7 +64,14 @@ const ProductDetail = () => {
     if (id) {
       dispatch(getProductDetail(id));
     }
+    return () => {
+      dispatch(setSelectedProduct(null));
+    };
   }, [id, dispatch]);
+
+  if (loading) {
+    return <ProductDetailSkeleton />;
+  }
 
   const addItemToCart = async () => {
     if (!id || !selectedProduct) return;
@@ -106,8 +116,8 @@ const ProductDetail = () => {
         </h2>
         <p className="text-zinc-500 mb-8 uppercase text-[11px] font-medium max-w-xs mx-auto leading-relaxed tracking-wider">
           {error && error.includes("Cast to ObjectId failed")
-            ? "THE PRODUCT ID IS INVALID. PLEASE CHECK THE URL."
-            : error || "THE ITEM YOU ARE LOOKING FOR IS UNAVAILABLE."}
+            ? "THE PRODUCT ID IS INVALID"
+            : "THE ITEM YOU ARE LOOKING FOR IS UNAVAILABLE"}
         </p>
         <button
           onClick={() => navigate("/")}

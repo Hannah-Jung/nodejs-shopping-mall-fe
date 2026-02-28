@@ -4,20 +4,24 @@ import { useSearchParams } from "react-router-dom";
 import { getProductList } from "../../features/product/productSlice";
 import { useAppDispatch, useAppSelector } from "../../features/hooks";
 import ReactPaginate from "react-paginate";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, TriangleAlert } from "lucide-react";
 import Spinner from "@/components/ui/spinner";
 import { ProductSkeleton } from "@/common/component/ProductSkeleton";
 
 const LandingPage = () => {
   const dispatch = useAppDispatch();
   const { loading: userLoading } = useAppSelector((state) => state.user);
-  const { productList, totalPageNum, loading } = useAppSelector(
+  const { productList, totalPageNum, loading, error } = useAppSelector(
     (state) => state.product,
   );
   const [searchParams, setSearchParams] = useSearchParams();
 
   const name = searchParams.get("name") ?? "";
   const page = searchParams.get("page") ?? "1";
+
+  const handleRetry = () => {
+    dispatch(getProductList({ page, limit: 12, name }));
+  };
 
   useEffect(() => {
     if (userLoading) return;
@@ -51,6 +55,26 @@ const LandingPage = () => {
             Array.from({ length: 12 }).map((_, index) => (
               <ProductSkeleton key={index} />
             ))
+          ) : error ? (
+            <div className="col-span-full py-20 text-center flex flex-col items-center gap-4">
+              <TriangleAlert
+                size={78}
+                strokeWidth={1.5}
+                className="text-zinc-900 mb-6"
+                strokeLinecap="square"
+                strokeLinejoin="miter"
+              />
+              <h2 className="text-xl font-bold text-zinc-500 uppercase tracking-tight">
+                Something went wrong
+              </h2>
+              <p className="text-zinc-500 text-sm max-w-xs">{error}</p>
+              <button
+                onClick={handleRetry}
+                className="mt-2 px-6 py-2 bg-zinc-900 text-white text-xs font-bold uppercase hover:bg-orange-500 transition-colors cursor-pointer"
+              >
+                Try Again
+              </button>
+            </div>
           ) : productList.length > 0 ? (
             productList.map((item) => (
               <ProductCard key={item._id} item={item} />

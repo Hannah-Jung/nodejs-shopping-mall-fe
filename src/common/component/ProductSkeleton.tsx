@@ -1,4 +1,4 @@
-import { Skeleton } from "../../components/ui/skeleton"; // 같은 폴더에 있으므로 경로 확인
+import { Skeleton } from "../../components/ui/skeleton";
 
 export const ProductSkeleton = () => {
   return (

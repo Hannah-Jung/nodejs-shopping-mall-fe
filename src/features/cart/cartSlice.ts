@@ -6,8 +6,17 @@ import { act } from "react";
 import { createOrder } from "../order/orderSlice";
 
 export interface CartItem {
-  _id?: string;
-  productId?: string;
+  _id: string;
+  productId: {
+    _id: string;
+    image: string[];
+    name: string;
+    price: {
+      single: number;
+      double: number;
+      family: number;
+    };
+  };
   size: string;
   qty: number;
 }
@@ -160,7 +169,6 @@ const cartSlice = createSlice({
     });
     builder.addCase(getCartQty.fulfilled, (state, action) => {
       state.loading = false;
-      state.error = "";
       state.cartItemCount = action.payload || 0;
     });
     builder.addCase(getCartQty.rejected, (state, action) => {
@@ -170,6 +178,7 @@ const cartSlice = createSlice({
     });
     builder.addCase(getCartList.pending, (state) => {
       state.loading = true;
+      state.error = "";
     });
     builder.addCase(getCartList.fulfilled, (state, action) => {
       state.loading = false;
@@ -189,7 +198,8 @@ const cartSlice = createSlice({
     });
     builder.addCase(getCartList.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.payload as string;
+      state.error = (action.payload as string) || "Failed to fetch cart list";
+      state.cartList = [];
     });
     builder.addCase(deleteCartItem.fulfilled, (state, action) => {
       state.loading = false;

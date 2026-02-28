@@ -15,13 +15,6 @@ root.style.setProperty("--primary-foreground", themeColors.primaryForeground);
 function App() {
   const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    const token = sessionStorage.getItem("token");
-    if (token) {
-      dispatch(loginWithToken());
-    }
-  }, [dispatch]);
-
   return (
     <div>
       <ScrollToTop />

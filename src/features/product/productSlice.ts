@@ -220,6 +220,8 @@ const productSlice = createSlice({
     });
     builder.addCase(getProductDetail.pending, (state) => {
       state.loading = true;
+      state.selectedProduct = null;
+      state.error = "";
     });
     builder.addCase(getProductDetail.fulfilled, (state, action) => {
       state.loading = false;
@@ -227,7 +229,7 @@ const productSlice = createSlice({
     });
     builder.addCase(getProductDetail.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.payload ?? "Loading failed";
+      state.error = action.payload ?? "Failed to load product information";
       state.selectedProduct = null;
     });
   },
