@@ -28,11 +28,19 @@ const initialState: UserState = {
 export const loginWithEmail = createAsyncThunk<
   AuthLoginResponse,
   { email: string; password: string },
-  { rejectValue: string }
->("user/loginWithEmail", async (arg, { rejectWithValue }) => {
+  { rejectValue: string; dispatch: AppDispatch }
+>("user/loginWithEmail", async (arg, { dispatch, rejectWithValue }) => {
   try {
     const { data } = await api.post<AuthLoginResponse>("/auth/login", arg);
     sessionStorage.setItem("token", data.token ?? "");
+
+    dispatch(
+      showToastMessage({
+        message: `Welcome, ${data.user.firstName}!`,
+        status: "success",
+      }),
+    );
+
     return data;
   } catch (err: unknown) {
     const e = err as {
@@ -51,14 +59,21 @@ export const loginWithEmail = createAsyncThunk<
 export const loginWithGoogle = createAsyncThunk<
   AuthLoginResponse,
   string,
-  { rejectValue: string }
->("user/loginWithGoogle", async (token, { rejectWithValue }) => {
+  { rejectValue: string; dispatch: AppDispatch }
+>("user/loginWithGoogle", async (token, { dispatch, rejectWithValue }) => {
   try {
     const { data } = await api.post<AuthLoginResponse>("/auth/google", {
       token,
     });
 
     sessionStorage.setItem("token", data.token ?? "");
+
+    dispatch(
+      showToastMessage({
+        message: `Welcome, ${data.user.firstName}!`,
+        status: "success",
+      }),
+    );
 
     return data;
   } catch (err: unknown) {
