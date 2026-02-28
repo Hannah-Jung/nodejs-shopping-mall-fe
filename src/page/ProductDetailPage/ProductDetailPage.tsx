@@ -22,18 +22,21 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Flame, Heart } from "lucide-react";
+import { Flame, Heart, TriangleAlert } from "lucide-react";
 import { addToCart } from "@/features/cart/cartSlice";
 import { cn } from "@/lib/utils";
 import AddToCartModal from "./component/AddToCartModal";
 import QtyStepper from "@/common/component/QtyStepper";
 import { getDisplayPrice } from "@/utils/displayPrice";
+import { ProductDetailSkeleton } from "@/common/component/ProductDetailSkeleton";
 
 const ProductDetail = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { selectedProduct, loading } = useAppSelector((state) => state.product);
+  const { selectedProduct, loading, error } = useAppSelector(
+    (state) => state.product,
+  );
   const user = useAppSelector((state) => state.user.user);
   const [size, setSize] = useState("");
   const [sizeError, setSizeError] = useState(false);
@@ -84,15 +87,34 @@ const ProductDetail = () => {
     setQty(1);
   };
 
-  if (loading || !selectedProduct) {
+  if (loading) {
+    return <ProductDetailSkeleton />;
+  }
+
+  if (!selectedProduct) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <ColorRing
-          visible={true}
-          height="80"
-          width="80"
-          colors={["#e15b64", "#f47e60", "#f8b26a", "#abbd81", "#849b87"]}
+      <div className="flex flex-col items-center justify-center h-[70vh] text-center px-4">
+        <TriangleAlert
+          size={78}
+          strokeWidth={1.5}
+          className="text-zinc-900 mb-6"
+          strokeLinecap="square"
+          strokeLinejoin="miter"
         />
+        <h2 className="text-xl font-bold text-zinc-900 mb-2 uppercase">
+          Product Not Found
+        </h2>
+        <p className="text-zinc-500 mb-8 uppercase text-[11px] font-medium max-w-xs mx-auto leading-relaxed tracking-wider">
+          {error && error.includes("Cast to ObjectId failed")
+            ? "THE PRODUCT ID IS INVALID. PLEASE CHECK THE URL."
+            : error || "THE ITEM YOU ARE LOOKING FOR IS UNAVAILABLE."}
+        </p>
+        <button
+          onClick={() => navigate("/")}
+          className="px-6 py-3 bg-zinc-900 text-white font-bold uppercase text-xs hover:bg-primary transition-colors cursor-pointer"
+        >
+          Back to Shop
+        </button>
       </div>
     );
   }

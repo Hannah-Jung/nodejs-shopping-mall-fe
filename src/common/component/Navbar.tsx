@@ -36,6 +36,18 @@ const Navbar = ({ user }: NavbarProps) => {
   const profileRef = useRef<HTMLDivElement>(null);
   const [searchTerm, setSearchTerm] = useState(query.get("name") ?? "");
   const location = useLocation();
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setIsSearchExpanded(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     setSearchTerm(query.get("name") ?? "");
@@ -98,56 +110,56 @@ const Navbar = ({ user }: NavbarProps) => {
         />
         <span>PREPT</span>
       </Link>
-
       {!isAdminPath && (
-        <div className="flex-1 max-w-2xl mx-4">
+        <div
+          ref={searchRef}
+          className={`
+            ${
+              isSearchExpanded
+                ? "absolute inset-x-0 mx-0 px-6 bg-primary-foreground h-full flex items-center z-50 animate-in fade-in slide-in-from-top-1 duration-300"
+                : "hidden md:flex flex-1 max-w-2xl mx-4"
+            } 
+            transition-all duration-300 md:static md:flex-1 md:mx-4 md:bg-transparent
+          `}
+        >
           <div
-            className={`group flex items-center gap-2 rounded-md border px-4 py-2.5 transition-all duration-500 ease-out ${
-              isAdmin
-                ? "border-black bg-muted/30 focus-within:border-primary/75"
-                : "border-input bg-muted/30 focus-within:border-primary/75"
-            }`}
+            className={`group flex items-center gap-2 rounded-md border px-4 py-2.5 transition-all duration-500 ease-out w-full
+              ${isAdmin ? "border-black bg-muted/30 focus-within:border-primary/75" : "border-input bg-muted/30 focus-within:border-primary/75"}
+            `}
           >
-            <Search
-              className={`size-4 shrink-0 transition-colors duration-300 ${
-                isAdmin
-                  ? "text-gray-400 group-focus-within:text-primary"
-                  : "text-muted-foreground group-focus-within:text-primary"
-              }`}
-            />
+            <Search className="size-4 shrink-0 text-muted-foreground transition-colors duration-300 group-focus-within:text-primary" />
             <input
               type="text"
               placeholder="SEARCH"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className={`w-full bg-transparent text-sm outline-none ${
-                isAdmin
-                  ? "placeholder:text-gray-400 text-white"
-                  : "placeholder:text-muted-foreground"
-              }`}
+              className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
               onKeyDown={onCheckEnter}
+              autoFocus={isSearchExpanded}
             />
-            {searchTerm && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchTerm("");
-                  navigate("/");
-                }}
-                className={`transition-colors ${
-                  isAdmin
-                    ? "text-gray-400 hover:text-white"
-                    : "text-muted-foreground hover:text-primary"
-                }`}
-              >
-                <X className="size-4" />
-              </button>
-            )}
+            <button
+              className="md:hidden text-muted-foreground"
+              onClick={() => setIsSearchExpanded(false)}
+            >
+              <X className="size-4" />
+            </button>
           </div>
         </div>
       )}
 
       <div className="flex items-center gap-1">
+        {!isAdminPath && !isSearchExpanded && (
+          <button
+            type="button"
+            onClick={() => setIsSearchExpanded(true)}
+            className={`p-2 rounded-full transition-colors md:hidden ${
+              isAdmin ? "hover:bg-white/10" : "hover:bg-muted"
+            }`}
+            aria-label="Search"
+          >
+            <Search className={`size-5 ${isAdmin ? "text-white" : ""}`} />
+          </button>
+        )}
         <button
           type="button"
           onClick={() => {}}
@@ -247,6 +259,7 @@ const Navbar = ({ user }: NavbarProps) => {
                 <div className="border-t border-border" />
                 <Link
                   to="/account/purchase"
+                  state={{ tab: "profile" }}
                   className="group uppercase flex min-h-[2.25rem] items-center gap-3 px-4 py-2 text-sm transition-colors duration-300 hover:bg-muted"
                   onClick={() => setProfileOpen(false)}
                 >
@@ -255,6 +268,7 @@ const Navbar = ({ user }: NavbarProps) => {
                 </Link>
                 <Link
                   to="/account/purchase"
+                  state={{ tab: "orders" }}
                   className="group flex uppercase min-h-[2.25rem] items-center gap-3 px-4 py-2 text-sm transition-colors duration-300 hover:bg-muted"
                   onClick={() => setProfileOpen(false)}
                 >

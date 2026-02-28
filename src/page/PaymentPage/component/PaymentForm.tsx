@@ -17,6 +17,8 @@ interface PaymentFormProps {
   cardValue: PaymentCardValue;
   handlePaymentInfoChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   errors: Record<string, boolean>;
+  showCvc?: boolean;
+  cvcRef?: React.RefObject<HTMLInputElement>;
 }
 
 const PaymentForm = ({
@@ -24,7 +26,12 @@ const PaymentForm = ({
   cardValue,
   handlePaymentInfoChange,
   errors,
+  showCvc = true,
+  cvcRef,
 }: PaymentFormProps) => {
+  const labelClass =
+    "text-[10px] font-black text-zinc-400 uppercase mb-1 block";
+
   const inputClass =
     "w-full border border-zinc-200 px-4 h-12 outline-none " +
     "focus:border-primary transition-colors duration-300 ease-in-out " +
@@ -55,6 +62,7 @@ const PaymentForm = ({
       </div>
       <div className="form-area w-full mt-3 gap-4 md:mt-0 md:w-1/2 flex flex-col justify-between">
         <div className="flex flex-col ">
+          <label className={labelClass}>Card Number</label>
           <input
             type="tel"
             name="number"
@@ -72,6 +80,7 @@ const PaymentForm = ({
         </div>
 
         <div className="flex flex-col">
+          <label className={labelClass}>Name on Card</label>
           <input
             type="text"
             name="name"
@@ -89,6 +98,7 @@ const PaymentForm = ({
 
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col">
+            <label className={labelClass}>Valid Thru</label>
             <input
               type="text"
               name="expiry"
@@ -103,20 +113,24 @@ const PaymentForm = ({
             {errors.expiry && <ErrorField message="Invalid expiry" />}
           </div>
 
-          <div className="flex flex-col">
-            <input
-              type="text"
-              name="cvc"
-              placeholder="CVC"
-              onChange={handlePaymentInfoChange}
-              onFocus={handleInputFocus}
-              required
-              maxLength={3}
-              value={cardValue.cvc}
-              className={cn(inputClass, getBorderClass("cvc"))}
-            />
-            {errors.cvc && <ErrorField message="Invalid CVC" />}
-          </div>
+          {showCvc && (
+            <div className="flex flex-col">
+              <label className={labelClass}>CVC</label>
+              <input
+                type="text"
+                name="cvc"
+                ref={cvcRef}
+                placeholder="CVC"
+                onChange={handlePaymentInfoChange}
+                onFocus={handleInputFocus}
+                required
+                maxLength={3}
+                value={cardValue.cvc}
+                className={cn(inputClass, getBorderClass("cvc"))}
+              />
+              {errors.cvc && <ErrorField message="Invalid CVC" />}
+            </div>
+          )}
         </div>
       </div>
     </div>

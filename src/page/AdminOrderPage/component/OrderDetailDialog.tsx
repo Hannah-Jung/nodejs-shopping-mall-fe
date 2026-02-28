@@ -10,6 +10,7 @@ interface OrderDetailDialogProps {
   open: boolean;
   handleClose: () => void;
   isAdmin?: boolean;
+  searchQuery?: Record<string, string>;
 }
 
 export interface OrderDetailOrder {
@@ -34,6 +35,7 @@ const OrderDetailDialog = ({
   open,
   handleClose,
   isAdmin = false,
+  searchQuery,
 }: OrderDetailDialogProps) => {
   const dispatch = useAppDispatch();
   const selectedOrder = useAppSelector(
@@ -68,7 +70,12 @@ const OrderDetailDialog = ({
       await dispatch(
         updateOrder({ id: selectedOrder._id, status: orderStatus }),
       ).unwrap();
-      dispatch(getOrderList({ page: 1 }));
+      dispatch(
+        getOrderList({
+          page: searchQuery?.page || 1,
+          ordernum: searchQuery?.ordernum || "",
+        }),
+      );
       handleClose();
     } catch (error) {
       console.error("Failed to update status", error);

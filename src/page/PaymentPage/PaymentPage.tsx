@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Cards from "react-credit-cards-2";
 import "react-credit-cards-2/dist/es/styles-compiled.css";
 import OrderReceipt from "./component/OrderReceipt";
@@ -27,6 +27,7 @@ import {
 } from "@/features/cart/cartSlice";
 import QtyStepper from "@/common/component/QtyStepper";
 import { Trash2 } from "lucide-react";
+import { updateUserProfile } from "@/features/user/userSlice";
 interface ShipInfo {
   firstName: string;
   lastName: string;
@@ -61,6 +62,7 @@ const PaymentPage = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const cvcRef = useRef<HTMLInputElement>(null);
   const { orderNum } = useAppSelector((state) => state.order);
   const [cardValue, setCardValue] =
     useState<PaymentCardValue>(initialCardValue);
@@ -70,6 +72,13 @@ const PaymentPage = () => {
   const [showStockModal, setShowStockModal] = useState(false);
   const [invalidItems, setInvalidItems] = useState<any[]>([]);
   const [tempQtys, setTempQtys] = useState<Record<string, number>>({});
+  const { user } = useAppSelector((state) => state.user);
+  const [useProfileInfo, setUseProfileInfo] = useState(false);
+  const [loadDefaultShip, setLoadDefaultShip] = useState(false);
+  const [loadDefaultCard, setLoadDefaultCard] = useState(false);
+
+  const [saveAsDefaultShip, setSaveAsDefaultShip] = useState(false);
+  const [saveAsDefaultCard, setSaveAsDefaultCard] = useState(false);
 
   useEffect(() => {
     dispatch(resetOrderNum());
@@ -148,7 +157,30 @@ const PaymentPage = () => {
           }),
         }),
       ).unwrap();
+
       if (orderNum) {
+        const updatePayload: any = {};
+
+        if (saveAsDefaultShip) {
+          updatePayload.contact = contact;
+          updatePayload.address = addressLine1;
+          updatePayload.addressLine2 = addressLine2;
+          updatePayload.city = city;
+          updatePayload.state = state;
+          updatePayload.zip = zipCode;
+        }
+
+        if (saveAsDefaultCard) {
+          updatePayload.paymentInfo = {
+            cardName: cardValue.name,
+            cardNumber: cardValue.number.replace(/\s/g, ""),
+            expiry: cardValue.expiry,
+          };
+        }
+
+        if (Object.keys(updatePayload).length > 0) {
+          dispatch(updateUserProfile(updatePayload));
+        }
         navigate("/payment/success", { replace: true, state: { orderNum } });
       }
     } catch (error: any) {
@@ -300,7 +332,7 @@ const PaymentPage = () => {
   };
   const inputClass =
     "w-full border border-zinc-200 px-4 h-12 outline-none " +
-    "focus:border-primary transition-colors duration-300 ease-in-out " +
+    "focus:border-primary transition-all duration-300 ease-in-out " +
     "text-xs font-black text-zinc-800 placeholder:text-zinc-400 " +
     "uppercase placeholder:uppercase antialiased flex items-center";
 
@@ -314,6 +346,50 @@ const PaymentPage = () => {
       {message}
     </p>
   );
+
+  useEffect(() => {
+    if (loadDefaultShip && user) {
+      setShipInfo({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        contact: formatPhoneNumber(user.contact || ""),
+        addressLine1: user.address || "",
+        addressLine2: user.addressLine2 || "",
+        city: user.city || "",
+        state: user.state || "",
+        zipCode: user.zip || "",
+      });
+    } else {
+      setShipInfo(initialShipInfo);
+    }
+  }, [loadDefaultShip, user]);
+
+  useEffect(() => {
+    if (loadDefaultCard && user?.paymentInfo) {
+      const formattedNumber = (user.paymentInfo?.cardNumber || "")
+        .replace(/\D/g, "")
+        .replace(/(\d{4})(?=\d)/g, "$1 ")
+        .trim();
+
+      setCardValue((prev) => ({
+        ...prev,
+        number: formattedNumber,
+        name: user.paymentInfo?.cardName || "",
+        expiry: user.paymentInfo?.expiry || "",
+        cvc: "",
+        focus: "cvc",
+      }));
+      setTimeout(() => {
+        cvcRef.current?.focus();
+      }, 0);
+    } else {
+      setCardValue(initialCardValue);
+    }
+  }, [loadDefaultCard, user]);
+
+  const labelClass =
+    "text-[10px] font-black text-zinc-400 uppercase mb-1 block pl-1";
+
   return (
     <div className="mx-auto max-w-6xl lg:px-16 px-4 py-12">
       <h1 className="text-2xl font-black mb-10 tracking-tight uppercase">
@@ -329,8 +405,22 @@ const PaymentPage = () => {
             <h2 className="text-xl font-bold mb-6 uppercase tracking-tight">
               Shipping Address
             </h2>
-            <div className="grid grid-cols-1 gap-x-5 gap-y-5 sm:grid-cols-2">
+            {user?.address && (
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={loadDefaultShip}
+                  onChange={(e) => setLoadDefaultShip(e.target.checked)}
+                  className="size-4 accent-black"
+                />
+                <span className="text-[10px] font-black text-zinc-600 uppercase">
+                  Use Default Address
+                </span>
+              </label>
+            )}
+            <div className="grid grid-cols-1 gap-x-5 gap-y-5 sm:grid-cols-2 mt-6">
               <div className="flex flex-col">
+                <label className={labelClass}>First Name</label>
                 <input
                   type="text"
                   name="firstName"
@@ -346,6 +436,7 @@ const PaymentPage = () => {
               </div>
 
               <div className="flex flex-col">
+                <label className={labelClass}>Last Name</label>
                 <input
                   type="text"
                   name="lastName"
@@ -361,6 +452,7 @@ const PaymentPage = () => {
               </div>
 
               <div className="flex flex-col">
+                <label className={labelClass}>Address Line 1</label>
                 <input
                   type="text"
                   name="addressLine1"
@@ -376,6 +468,7 @@ const PaymentPage = () => {
               </div>
 
               <div className="flex flex-col">
+                <label className={labelClass}>Address Line 2 (Optional)</label>
                 <input
                   type="text"
                   name="addressLine2"
@@ -387,6 +480,7 @@ const PaymentPage = () => {
               </div>
 
               <div className="flex flex-col">
+                <label className={labelClass}>City</label>
                 <input
                   type="text"
                   name="city"
@@ -402,6 +496,7 @@ const PaymentPage = () => {
               </div>
 
               <div className="flex flex-col">
+                <label className={labelClass}>STATE</label>
                 <Select
                   onValueChange={(value) => {
                     setShipInfo((prev) => ({ ...prev, state: value }));
@@ -451,6 +546,7 @@ const PaymentPage = () => {
               </div>
 
               <div className="flex flex-col">
+                <label className={labelClass}>ZIP CODE</label>
                 <input
                   type="text"
                   name="zipCode"
@@ -467,6 +563,7 @@ const PaymentPage = () => {
               </div>
 
               <div className="flex flex-col">
+                <label className={labelClass}>CONTACT</label>
                 <input
                   type="tel"
                   name="contact"
@@ -482,18 +579,60 @@ const PaymentPage = () => {
                 )}
               </div>
             </div>
+            <label className="flex items-center gap-2 mt-6 cursor-pointer w-fit ml-auto mr-2">
+              <input
+                type="checkbox"
+                checked={saveAsDefaultShip}
+                onChange={(e) => setSaveAsDefaultShip(e.target.checked)}
+                className="size-4 accent-black"
+              />
+              <span className="text-[10px] font-black text-zinc-600 uppercase">
+                Set as Default Shipping Address
+              </span>
+            </label>
           </section>
 
           <section>
             <h2 className="text-xl font-bold mb-6 uppercase tracking-tight">
               Payment Method
             </h2>
+            {user?.paymentInfo?.cardNumber && (
+              <label className="flex items-center gap-2 cursor-pointer mb-6">
+                <input
+                  type="checkbox"
+                  checked={loadDefaultCard}
+                  onChange={(e) => setLoadDefaultCard(e.target.checked)}
+                  className="size-4 accent-black"
+                />
+                <span className="text-[10px] font-black text-zinc-600 uppercase">
+                  Use Default Card
+                </span>
+              </label>
+            )}
             <PaymentForm
               handleInputFocus={handleInputFocus}
               cardValue={cardValue}
               handlePaymentInfoChange={handlePaymentInfoChange}
               errors={errors}
+              cvcRef={cvcRef}
             />
+
+            <label className="flex items-center gap-2 mt-4 cursor-pointer w-fit ml-auto mr-2">
+              <input
+                type="checkbox"
+                checked={saveAsDefaultCard}
+                onChange={(e) => setSaveAsDefaultCard(e.target.checked)}
+                className="size-4 accent-black"
+              />
+              <span className="text-[10px] font-black text-zinc-600 uppercase">
+                Set as Default Payment Method
+              </span>
+            </label>
+            {loadDefaultCard && (
+              <p className="text-[9px] text-primary text-right font-bold uppercase mt-2 pl-1">
+                * For your security, please manually enter the CVC code.
+              </p>
+            )}
           </section>
         </div>
 

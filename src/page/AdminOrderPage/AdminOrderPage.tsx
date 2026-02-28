@@ -62,10 +62,21 @@ const AdminOrderPage = () => {
     window.scrollTo(0, 0);
   };
 
+  const handleReset = () => {
+    setSearchQuery({
+      page: "1",
+      ordernum: "",
+    });
+    navigate("/admin/order", { replace: true });
+  };
+
   return (
     <div className="py-10">
       <div className="max-w-7xl mx-auto px-4">
-        <h1 className="text-2xl font-black mb-8 uppercase tracking-tight">
+        <h1
+          className="text-2xl font-black mb-8 uppercase tracking-tight cursor-pointer"
+          onClick={handleReset}
+        >
           Order Management
         </h1>
 
@@ -117,6 +128,7 @@ const AdminOrderPage = () => {
           open={open}
           handleClose={() => setOpen(false)}
           isAdmin={true}
+          searchQuery={searchQuery}
         />
       )}
     </div>

@@ -3,7 +3,11 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useNavigate } from "react-router-dom";
-import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
+import {
+  GoogleLogin,
+  GoogleOAuthProvider,
+  CredentialResponse,
+} from "@react-oauth/google";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,7 +21,11 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import "./style/login.style.css";
-import { loginWithEmail, clearErrors } from "../../features/user/userSlice";
+import {
+  loginWithEmail,
+  clearErrors,
+  loginWithGoogle,
+} from "../../features/user/userSlice";
 import { useAppDispatch, useAppSelector } from "../../features/hooks";
 
 const loginSchema = z.object({
@@ -109,8 +117,10 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLogin = async (googleData: unknown) => {
-    void googleData;
+  const handleGoogleLogin = async (credentialResponse: CredentialResponse) => {
+    if (credentialResponse.credential) {
+      await dispatch(loginWithGoogle(credentialResponse.credential)).unwrap();
+    }
   };
 
   return (
@@ -228,12 +238,16 @@ const Login = () => {
               "Login"
             )}
           </Button>
-          <div className="google-login-wrap uppercase w-full [&_.abc]:!hidden">
+
+          <div className="google-login-wrap uppercase w-full">
             <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
               <GoogleLogin
                 onSuccess={handleGoogleLogin}
                 onError={() => console.log("Login Failed")}
                 useOneTap={false}
+                theme="outline"
+                size="large"
+                width="335"
               />
             </GoogleOAuthProvider>
           </div>

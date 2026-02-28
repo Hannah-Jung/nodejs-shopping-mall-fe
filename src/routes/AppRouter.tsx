@@ -11,8 +11,11 @@ import ProductAll from "../page/LandingPage/LandingPage";
 import ProductDetail from "../page/ProductDetailPage/ProductDetailPage";
 import RegisterPage from "../page/RegisterPage/RegisterPage";
 import PrivateRoute from "./PrivateRoute";
+import { useNavigate } from "react-router-dom";
+import { TriangleAlert } from "lucide-react";
 
 const AppRouter = () => {
+  const navigate = useNavigate();
   return (
     <Routes>
       <Route path="/" element={<ProductAll />} />
@@ -30,6 +33,35 @@ const AppRouter = () => {
         <Route path="/admin/product" element={<AdminProductPage />} />
         <Route path="/admin/order" element={<AdminOrderPage />} />
       </Route>
+      <Route
+        path="*"
+        element={
+          <div className="flex flex-col items-center justify-center h-[60vh] text-center px-4">
+            <TriangleAlert
+              size={78}
+              strokeWidth={1.5}
+              className="text-zinc-900 mb-6"
+              strokeLinecap="square"
+              strokeLinejoin="miter"
+            />
+            <h1 className="text-6xl font-black text-zinc-400 mb-4 uppercase">
+              404
+            </h1>
+            <h2 className="text-xl font-bold text-zinc-900 mb-2 uppercase">
+              Page Not Found
+            </h2>
+            <p className="text-zinc-500 mb-8 uppercase text-sm font-medium">
+              The page you are looking for doesn't exist or has been moved.
+            </p>
+            <button
+              onClick={() => navigate("/")}
+              className="px-6 py-3 bg-zinc-900 text-white font-bold uppercase text-xs hover:bg-primary transition-colors"
+            >
+              Back to Home
+            </button>
+          </div>
+        }
+      />
     </Routes>
   );
 };

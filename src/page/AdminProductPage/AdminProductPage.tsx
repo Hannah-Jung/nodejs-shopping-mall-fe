@@ -111,10 +111,22 @@ const AdminProductPage = () => {
     setSearchQuery((prev) => ({ ...prev, page: String(selected + 1) }));
   };
 
+  const handleReset = () => {
+    setSearchQuery({
+      page: "1",
+      name: "",
+      sort: "createdAt-desc",
+    });
+    navigate("/admin/product", { replace: true });
+  };
+
   return (
     <div className="py-10">
       <div className="max-w-7xl mx-auto px-4">
-        <h1 className="text-2xl font-black mb-8 uppercase tracking-tight">
+        <h1
+          className="text-2xl font-black mb-8 uppercase tracking-tight cursor-pointer"
+          onClick={handleReset}
+        >
           Product Management
         </h1>
         <div className="mt-2">

@@ -228,6 +228,7 @@ const productSlice = createSlice({
     builder.addCase(getProductDetail.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload ?? "Loading failed";
+      state.selectedProduct = null;
     });
   },
 });

@@ -49,11 +49,30 @@ export const loginWithEmail = createAsyncThunk<
 });
 
 export const loginWithGoogle = createAsyncThunk<
-  void,
+  AuthLoginResponse,
   string,
   { rejectValue: string }
->("user/loginWithGoogle", async (_token, { rejectWithValue }) => {
-  void rejectWithValue;
+>("user/loginWithGoogle", async (token, { rejectWithValue }) => {
+  try {
+    const { data } = await api.post<AuthLoginResponse>("/auth/google", {
+      token,
+    });
+
+    sessionStorage.setItem("token", data.token ?? "");
+
+    return data;
+  } catch (err: unknown) {
+    const e = err as {
+      response?: { data?: { message?: string; error?: string } };
+      message?: string;
+    };
+    const msg =
+      e?.response?.data?.message ??
+      e?.response?.data?.error ??
+      e?.message ??
+      "Google login failed.";
+    return rejectWithValue(msg);
+  }
 });
 
 export interface RegisterUserArg {
@@ -140,6 +159,31 @@ export const loginWithToken = createAsyncThunk<
   }
 });
 
+export const updateUserProfile = createAsyncThunk<
+  User,
+  any,
+  { rejectValue: string; dispatch: AppDispatch }
+>("user/updateUserProfile", async (formData, { dispatch, rejectWithValue }) => {
+  try {
+    const { data } = await api.put<ApiResponse<User>>("/user", formData);
+
+    dispatch(
+      showToastMessage({
+        message: "Profile updated successfully!",
+        status: "success",
+      }),
+    );
+
+    if (!data.data) throw new Error("No user data returned");
+    return data.data;
+  } catch (err: unknown) {
+    const e = err as { error?: string; message?: string };
+    return rejectWithValue(
+      e?.error ?? e?.message ?? "Failed to update profile",
+    );
+  }
+});
+
 const userSlice = createSlice({
   name: "user",
   initialState,
@@ -191,6 +235,31 @@ const userSlice = createSlice({
       .addCase(loginWithToken.rejected, (state) => {
         state.loading = false;
         state.user = null;
+      })
+
+      .addCase(loginWithGoogle.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(loginWithGoogle.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.loginError = null;
+      })
+      .addCase(loginWithGoogle.rejected, (state, action) => {
+        state.loading = false;
+        state.loginError = action.payload ?? "An error occurred";
+      })
+      .addCase(updateUserProfile.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(updateUserProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+        state.success = true;
+      })
+      .addCase(updateUserProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.registrationError = action.payload ?? null;
       });
   },
 });
